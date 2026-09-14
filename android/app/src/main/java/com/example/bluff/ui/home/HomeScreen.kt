@@ -24,9 +24,9 @@ import com.example.bluff.theme.IncomeColor
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.components.BluffAmountInput
-import com.example.bluff.ui.components.BluffButton
 import com.example.bluff.ui.components.BluffSectionHeader
 import com.example.bluff.ui.components.BudgetProgressCard
+import com.example.bluff.ui.components.EmptyState
 import com.example.bluff.ui.components.TransactionRow
 import com.example.bluff.ui.util.toDisplayAmount
 
@@ -35,9 +35,10 @@ fun HomeScreen(
     onNavigateToTransactionDetail: (String) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
 ) {
+    val greeting by viewModel.greeting.collectAsState()
     val totalBalance by viewModel.totalBalance.collectAsState()
-    val income by viewModel.income.collectAsState()
-    val spent by viewModel.spent.collectAsState()
+    val income by viewModel.monthlyIncome.collectAsState()
+    val spent by viewModel.monthlySpent.collectAsState()
     val recentTransactions by viewModel.recentTransactions.collectAsState()
     val activeBudget by viewModel.activeBudget.collectAsState()
 
@@ -46,7 +47,8 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Text(text = "Good evening", color = TextSecondary)
+            Text(text = greeting, color = TextSecondary)
+            Spacer(modifier = Modifier.height(4.dp))
             Text(text = "Total Balance", color = TextPrimary, style = MaterialTheme.typography.titleMedium)
             BluffAmountInput(amount = totalBalance)
         }
@@ -75,8 +77,16 @@ fun HomeScreen(
             BluffSectionHeader(title = "Recent Transactions")
         }
 
-        items(recentTransactions) { tx ->
-            TransactionRow(transaction = tx, onClick = { onNavigateToTransactionDetail(tx.id) })
+        if (recentTransactions.isEmpty()) {
+            item {
+                EmptyState(
+                    message = "No transactions yet — tap + to add your first transaction"
+                )
+            }
+        } else {
+            items(recentTransactions) { tx ->
+                TransactionRow(transaction = tx, onClick = { onNavigateToTransactionDetail(tx.id) })
+            }
         }
     }
 }

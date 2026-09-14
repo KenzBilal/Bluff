@@ -8,46 +8,78 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.Budget
 import com.example.bluff.domain.model.Transaction
+import com.example.bluff.domain.model.TransactionType
+import com.example.bluff.domain.usecase.account.GetAccountsUseCase
+import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
+import com.example.bluff.domain.usecase.transaction.GetTransactionsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 
 class HomeViewModel(
-    private val appContainer: AppContainer
+    private val getTransactionsUseCase: GetTransactionsUseCase,
+    private val getAccountsUseCase: GetAccountsUseCase,
+    private val getBudgetsUseCase: GetBudgetsUseCase
 ) : ViewModel() {
 
-    private val _totalBalance = MutableStateFlow(0L)
-    val totalBalance: StateFlow<Long> = _totalBalance
+    private val now = LocalDate.now()
+    private val monthStart = now.withDayOfMonth(1)
+    private val monthEnd = now.with(TemporalAdjusters.lastDayOfMonth())
 
-    private val _income = MutableStateFlow(0L)
-    val income: StateFlow<Long> = _income
+    private val _greeting = MutableStateFlow("Good evening")
+    val greeting: StateFlow<String> = _greeting.asStateFlow()
 
-    private val _spent = MutableStateFlow(0L)
-    val spent: StateFlow<Long> = _spent
+    val totalBalance: StateFlow<Long> = getAccountsUseCase.getActive()
+        .combine(MutableStateFlow(Unit)) { accounts, _ ->
+            accounts.sumOf { it.currentBalanceMinor }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
-    private val _recentTransactions = MutableStateFlow<List<Transaction>>(emptyList())
-    val recentTransactions: StateFlow<List<Transaction>> = _recentTransactions
+    val monthlyIncome: StateFlow<Long> = getTransactionsUseCase.getByDateRange(monthStart, monthEnd)
+        .combine(MutableStateFlow(Unit)) { txns, _ ->
+            txns.filter { it.type == TransactionType.INCOME }.sumOf { it.amountMinor }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
-    private val _activeBudget = MutableStateFlow<Budget?>(null)
-    val activeBudget: StateFlow<Budget?> = _activeBudget
+    val monthlySpent: StateFlow<Long> = getTransactionsUseCase.getByDateRange(monthStart, monthEnd)
+        .combine(MutableStateFlow(Unit)) { txns, _ ->
+            txns.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amountMinor }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
+    val recentTransactions: StateFlow<List<Transaction>> = getTransactionsUseCase.getRecent()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val activeBudget: StateFlow<Budget?> = getBudgetsUseCase.getOverallBudget()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {
-        loadData()
+        updateGreeting()
     }
 
-    private fun loadData() {
-        viewModelScope.launch {
-            // Load dummy data or call usecases
-            _totalBalance.value = 842000L
-            _income.value = 1200000L
-            _spent.value = 358000L
+    private fun updateGreeting() {
+        val hour = java.time.LocalTime.now().hour
+        _greeting.value = when {
+            hour < 12 -> "Good morning"
+            hour < 17 -> "Good afternoon"
+            else -> "Good evening"
         }
     }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                HomeViewModel(AppContainer.instance)
+                val container = AppContainer.instance
+                HomeViewModel(
+                    container.getTransactionsUseCase,
+                    container.getAccountsUseCase,
+                    container.getBudgetsUseCase
+                )
             }
         }
     }
