@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
 import com.example.bluff.di.AppContainer
 import com.example.bluff.ui.accounts.AccountsScreen
@@ -115,7 +116,7 @@ private fun BluffMainApp() {
                 onBack = { backStack.removeLastOrNull() },
                 modifier = Modifier.padding(innerPadding),
                 entryProvider = entryProvider {
-                    entry<HomeKey> { HomeScreen() }
+                    entry<HomeKey> { HomeScreen(onNavigateToTransactionDetail = {}) }
                     entry<TransactionsKey> { TransactionsScreen() }
                     entry<AnalyticsKey> { AnalyticsScreen() }
                     entry<MoreKey> {
@@ -155,9 +156,7 @@ private fun BluffMainApp() {
             // Add Transaction Sheet overlaid on top
             if (showAddTransaction) {
                 AddTransactionSheet(
-                    onDismiss = { showAddTransaction = false },
-                    onSaved = { showAddTransaction = false },
-                    modifier = Modifier.align(Alignment.BottomCenter)
+                    onDismiss = { showAddTransaction = false }
                 )
             }
         }
@@ -165,7 +164,7 @@ private fun BluffMainApp() {
 }
 
 private data class BottomNavItem(
-    val key: Any,
+    val key: NavKey,
     val label: String,
     val icon: ImageVector
 )
@@ -179,8 +178,8 @@ private val bottomNavItems = listOf(
 
 @Composable
 private fun BluffBottomNavBar(
-    currentKey: Any?,
-    onNavigate: (Any) -> Unit
+    currentKey: NavKey?,
+    onNavigate: (NavKey) -> Unit
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,

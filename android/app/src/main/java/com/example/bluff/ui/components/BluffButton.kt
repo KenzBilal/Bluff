@@ -30,5 +30,7 @@ fun BluffButton(
             containerColor = Primary,
             contentColor = TextPrimary
         )
-    )
+    ) {
+        Text(text = text)
+    }
 }

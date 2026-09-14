@@ -1,5 +1,6 @@
 package com.example.bluff.ui.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +25,7 @@ import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 import com.example.bluff.theme.TransferColor
 import com.example.bluff.ui.util.toDisplayAmount
-import com.example.bluff.ui.util.DateFormatter
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun TransactionRow(
@@ -45,15 +46,15 @@ fun TransactionRow(
                 color = CardColor
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(text = transaction.categoryIcon)
+                    Text(text = transaction.categoryIcon ?: "📦")
                 }
             }
             
             Spacer(modifier = Modifier.width(16.dp))
             
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = transaction.categoryName, color = TextPrimary, fontWeight = FontWeight.SemiBold)
-                if (transaction.note.isNotBlank()) {
+                Text(text = transaction.categoryName ?: "Other", color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                if (!transaction.note.isNullOrBlank()) {
                     Text(text = transaction.note, color = TextSecondary)
                 }
                 Text(text = transaction.accountName, color = TextSecondary)
@@ -71,12 +72,12 @@ fun TransactionRow(
                     TransactionType.TRANSFER -> "↔"
                 }
                 Text(
-                    text = "$prefix${transaction.amount.toDisplayAmount()}",
+                    text = "$prefix${transaction.amountMinor.toDisplayAmount()}",
                     color = amountColor,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = DateFormatter.formatTime(transaction.timestamp),
+                    text = transaction.transactionDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy")),
                     color = TextSecondary
                 )
             }

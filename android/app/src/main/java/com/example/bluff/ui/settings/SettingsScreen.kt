@@ -19,10 +19,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.viewModelScope
 import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.AppSettings
-import com.example.bluff.domain.usecase.settings.GetSettingsUseCase
-import com.example.bluff.domain.usecase.settings.UpdateSettingsUseCase
+import com.example.bluff.domain.usecase.settings.GetAppSettingsUseCase
+import com.example.bluff.domain.usecase.settings.UpdateAppSettingsUseCase
 import com.example.bluff.theme.Background
 import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.TextPrimary
@@ -32,17 +33,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val getSettingsUseCase: GetSettingsUseCase,
-    private val updateSettingsUseCase: UpdateSettingsUseCase
+    private val getSettingsUseCase: GetAppSettingsUseCase,
+    private val updateSettingsUseCase: UpdateAppSettingsUseCase
 ) : ViewModel() {
     val settings = getSettingsUseCase()
 
-    fun updateSetting(updater: (AppSettings) -> AppSettings) {
-        val current = settings.value
-        if (current != null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                updateSettingsUseCase(updater(current))
-            }
+    fun updateSetting(current: AppSettings, updater: (AppSettings) -> AppSettings) {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateSettingsUseCase(updater(current))
         }
     }
 
@@ -50,7 +48,7 @@ class SettingsViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = AppContainer.instance
-                SettingsViewModel(container.getSettingsUseCase, container.updateSettingsUseCase)
+                SettingsViewModel(container.getAppSettingsUseCase, container.updateAppSettingsUseCase)
             }
         }
     }
@@ -94,16 +92,16 @@ fun SettingsScreen(onBack: () -> Unit) {
                     Text("Notifications", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.height(8.dp))
                     SettingSwitchItem("Budget Alerts", currentSettings.notificationsBudget) {
-                        vm.updateSetting { s -> s.copy(notificationsBudget = it) }
+                        vm.updateSetting(currentSettings) { s -> s.copy(notificationsBudget = it) }
                     }
                     SettingSwitchItem("Recurring Transactions", currentSettings.notificationsRecurring) {
-                        vm.updateSetting { s -> s.copy(notificationsRecurring = it) }
+                        vm.updateSetting(currentSettings) { s -> s.copy(notificationsRecurring = it) }
                     }
                     SettingSwitchItem("Goal Progress", currentSettings.notificationsGoals) {
-                        vm.updateSetting { s -> s.copy(notificationsGoals = it) }
+                        vm.updateSetting(currentSettings) { s -> s.copy(notificationsGoals = it) }
                     }
                     SettingSwitchItem("Daily Reminder", currentSettings.notificationsDailyReminder) {
-                        vm.updateSetting { s -> s.copy(notificationsDailyReminder = it) }
+                        vm.updateSetting(currentSettings) { s -> s.copy(notificationsDailyReminder = it) }
                     }
                     Spacer(Modifier.height(24.dp))
                 }
@@ -112,10 +110,10 @@ fun SettingsScreen(onBack: () -> Unit) {
                     Text("Security", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.height(8.dp))
                     SettingSwitchItem("Require PIN", currentSettings.pinEnabled) {
-                        vm.updateSetting { s -> s.copy(pinEnabled = it) }
+                        vm.updateSetting(currentSettings) { s -> s.copy(pinEnabled = it) }
                     }
                     SettingSwitchItem("Biometric Authentication", currentSettings.biometricEnabled) {
-                        vm.updateSetting { s -> s.copy(biometricEnabled = it) }
+                        vm.updateSetting(currentSettings) { s -> s.copy(biometricEnabled = it) }
                     }
                 }
             } ?: run {

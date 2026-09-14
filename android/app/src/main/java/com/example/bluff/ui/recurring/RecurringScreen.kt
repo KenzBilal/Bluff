@@ -42,7 +42,7 @@ class RecurringViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = AppContainer.instance
-                RecurringViewModel(container.getRecurringUseCase)
+                RecurringViewModel(container.getRecurringTransactionsUseCase)
             }
         }
     }

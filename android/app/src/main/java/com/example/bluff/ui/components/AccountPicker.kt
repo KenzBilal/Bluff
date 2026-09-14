@@ -43,7 +43,7 @@ fun AccountPicker(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(text = account.name, color = TextPrimary)
-                        Text(text = account.balance.toDisplayAmount(), color = TextPrimary)
+                        Text(text = account.currentBalanceMinor.toDisplayAmount(), color = TextPrimary)
                     }
                 }
             }

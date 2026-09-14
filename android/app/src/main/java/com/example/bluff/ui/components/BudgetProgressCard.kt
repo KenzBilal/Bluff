@@ -34,11 +34,11 @@ fun BudgetProgressCard(
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(text = "Spent ${spent.toDisplayAmount()}", color = TextPrimary)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = "of ${budget.amount.toDisplayAmount()}", color = TextSecondary)
+                Text(text = "of ${budget.amountMinor.toDisplayAmount()}", color = TextSecondary)
             }
             
             Spacer(modifier = Modifier.height(8.dp))
-            val progress = if (budget.amount > 0) (spent.toFloat() / budget.amount).coerceIn(0f, 1f) else 0f
+            val progress = if (budget.amountMinor > 0) (spent.toFloat() / budget.amountMinor).coerceIn(0f, 1f) else 0f
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier.fillMaxWidth().height(8.dp),

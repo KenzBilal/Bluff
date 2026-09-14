@@ -7,23 +7,26 @@ import com.example.bluff.domain.model.Tag
 @Entity(tableName = "tags")
 data class TagEntity(
     @PrimaryKey val id: String,
+    val userId: String,
     val name: String,
     val color: String,
-    val updatedAt: String
+    val createdAt: Long
 ) {
     fun toModel() = Tag(
         id = id,
+        userId = userId,
         name = name,
         color = color,
-        updatedAt = updatedAt
+        createdAt = createdAt
     )
 
     companion object {
         fun fromModel(model: Tag) = TagEntity(
             id = model.id,
+            userId = model.userId,
             name = model.name,
             color = model.color,
-            updatedAt = model.updatedAt
+            createdAt = model.createdAt
         )
     }
 }

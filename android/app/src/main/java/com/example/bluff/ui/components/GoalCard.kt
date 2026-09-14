@@ -31,13 +31,13 @@ fun GoalCard(
             Spacer(modifier = Modifier.height(8.dp))
             
             Row(modifier = Modifier.fillMaxWidth()) {
-                Text(text = goal.currentAmount.toDisplayAmount(), color = TextPrimary)
+                Text(text = goal.currentAmountMinor.toDisplayAmount(), color = TextPrimary)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = goal.targetAmount.toDisplayAmount(), color = TextSecondary)
+                Text(text = goal.targetAmountMinor.toDisplayAmount(), color = TextSecondary)
             }
             
             Spacer(modifier = Modifier.height(8.dp))
-            val progress = if (goal.targetAmount > 0) (goal.currentAmount.toFloat() / goal.targetAmount).coerceIn(0f, 1f) else 0f
+            val progress = if (goal.targetAmountMinor > 0) (goal.currentAmountMinor.toFloat() / goal.targetAmountMinor).coerceIn(0f, 1f) else 0f
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier.fillMaxWidth().height(8.dp),

@@ -27,7 +27,7 @@ fun AccountCard(
             Text(text = account.name, color = TextPrimary, fontWeight = FontWeight.Medium)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = account.balance.toDisplayAmount(),
+                text = account.currentBalanceMinor.toDisplayAmount(),
                 color = TextPrimary,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
