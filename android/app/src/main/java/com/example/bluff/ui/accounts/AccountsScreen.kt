@@ -1,6 +1,7 @@
 package com.example.bluff.ui.accounts
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,9 +9,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,15 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.Account
-import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.theme.Background
 import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.Primary
@@ -34,26 +33,13 @@ import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.util.toDisplayAmount
 
-class AccountsViewModel(
-    private val getAccountsUseCase: GetAccountsUseCase
-) : ViewModel() {
-    val accounts = getAccountsUseCase.getActive()
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val container = AppContainer.instance
-                AccountsViewModel(container.getAccountsUseCase)
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountsScreen(onBack: () -> Unit) {
     val vm: AccountsViewModel = viewModel(factory = AccountsViewModel.Factory)
     val accounts by vm.accounts.collectAsStateWithLifecycle(initialValue = emptyList())
+    var showAddEdit by remember { mutableStateOf(false) }
+    var editingAccount by remember { mutableStateOf<Account?>(null) }
 
     Scaffold(
         topBar = {
@@ -70,6 +56,14 @@ fun AccountsScreen(onBack: () -> Unit) {
                     navigationIconContentColor = TextPrimary
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { editingAccount = null; showAddEdit = true },
+                containerColor = Primary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add account")
+            }
         },
         containerColor = Background
     ) { innerPadding ->
@@ -89,16 +83,29 @@ fun AccountsScreen(onBack: () -> Unit) {
                 }
             } else {
                 items(accounts) { account ->
-                    AccountCard(account)
+                    AccountCard(
+                        account = account,
+                        onClick = { editingAccount = account; showAddEdit = true }
+                    )
                     Spacer(Modifier.height(12.dp))
                 }
             }
         }
     }
+
+    if (showAddEdit) {
+        AddEditAccountSheet(
+            account = editingAccount,
+            onDismiss = { showAddEdit = false },
+            onSave = { name, type, balance, icon, color ->
+                vm.saveAccount(name, type, balance, icon, color, editingAccount?.id)
+            }
+        )
+    }
 }
 
 @Composable
-private fun AccountCard(account: Account) {
+private fun AccountCard(account: Account, onClick: () -> Unit) {
     val parsedColor = try {
         Color(android.graphics.Color.parseColor(account.color))
     } catch (e: Exception) {
@@ -108,7 +115,7 @@ private fun AccountCard(account: Account) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = CardColor,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
