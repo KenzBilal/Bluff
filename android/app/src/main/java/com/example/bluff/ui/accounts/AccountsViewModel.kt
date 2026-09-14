@@ -12,9 +12,7 @@ import com.example.bluff.domain.usecase.account.AddAccountUseCase
 import com.example.bluff.domain.usecase.account.DeleteAccountUseCase
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.account.UpdateAccountUseCase
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+
 import kotlinx.coroutines.launch
 
 class AccountsViewModel(
@@ -25,11 +23,6 @@ class AccountsViewModel(
 ) : ViewModel() {
 
     val accounts = getAccountsUseCase.getActive()
-
-    private val _editingAccount = MutableStateFlow<Account?>(null)
-    val editingAccount: StateFlow<Account?> = _editingAccount.asStateFlow()
-
-    fun setEditingAccount(account: Account?) { _editingAccount.value = account }
 
     fun saveAccount(
         name: String,
@@ -54,7 +47,6 @@ class AccountsViewModel(
             } else {
                 addAccountUseCase(account)
             }
-            _editingAccount.value = null
         }
     }
 
