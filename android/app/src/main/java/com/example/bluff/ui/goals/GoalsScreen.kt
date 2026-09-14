@@ -50,19 +50,17 @@ class GoalsViewModel(
 
     val goals = getGoalsUseCase.getActive()
 
-    fun saveGoal(name: String, targetAmount: Long, targetDate: LocalDate?, existingId: String? = null) {
-        viewModelScope.launch {
-            val goal = Goal(
-                id = existingId ?: "",
-                userId = "",
-                name = name,
-                targetAmountMinor = targetAmount,
-                targetDate = targetDate,
-                icon = "🎯",
-                color = "#6C63FF"
-            )
-            upsertGoalUseCase(goal)
-        }
+    suspend fun saveGoal(name: String, targetAmount: Long, targetDate: LocalDate?, existingId: String? = null) {
+        val goal = Goal(
+            id = existingId ?: "",
+            userId = "",
+            name = name,
+            targetAmountMinor = targetAmount,
+            targetDate = targetDate,
+            icon = "🎯",
+            color = "#6C63FF"
+        )
+        upsertGoalUseCase(goal)
     }
 
     fun deleteGoal(id: String) {
