@@ -1,0 +1,110 @@
+package com.example.bluff.di
+
+import android.content.Context
+import com.example.bluff.BuildConfig
+import com.example.bluff.data.local.BluffDatabase
+import com.example.bluff.data.preferences.UserPreferencesManager
+import com.example.bluff.data.remote.SupabaseProvider
+import com.example.bluff.data.repository.AccountRepositoryImpl
+import com.example.bluff.data.repository.AppSettingsRepositoryImpl
+import com.example.bluff.data.repository.BudgetRepositoryImpl
+import com.example.bluff.data.repository.CategoryRepositoryImpl
+import com.example.bluff.data.repository.GoalRepositoryImpl
+import com.example.bluff.data.repository.RecurringTransactionRepositoryImpl
+import com.example.bluff.data.repository.TransactionRepositoryImpl
+import com.example.bluff.domain.usecase.account.AddAccountUseCase
+import com.example.bluff.domain.usecase.account.DeleteAccountUseCase
+import com.example.bluff.domain.usecase.account.GetAccountsUseCase
+import com.example.bluff.domain.usecase.account.UpdateAccountUseCase
+import com.example.bluff.domain.usecase.analytics.GetAnalyticsUseCase
+import com.example.bluff.domain.usecase.budget.DeleteBudgetUseCase
+import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
+import com.example.bluff.domain.usecase.budget.UpsertBudgetUseCase
+import com.example.bluff.domain.usecase.category.AddCategoryUseCase
+import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
+import com.example.bluff.domain.usecase.goal.DeleteGoalUseCase
+import com.example.bluff.domain.usecase.goal.GetGoalsUseCase
+import com.example.bluff.domain.usecase.goal.UpsertGoalUseCase
+import com.example.bluff.domain.usecase.recurring.DeleteRecurringTransactionUseCase
+import com.example.bluff.domain.usecase.recurring.GetRecurringTransactionsUseCase
+import com.example.bluff.domain.usecase.recurring.UpsertRecurringTransactionUseCase
+import com.example.bluff.domain.usecase.settings.GetAppSettingsUseCase
+import com.example.bluff.domain.usecase.settings.UpdateAppSettingsUseCase
+import com.example.bluff.domain.usecase.transaction.AddTransactionUseCase
+import com.example.bluff.domain.usecase.transaction.DeleteTransactionUseCase
+import com.example.bluff.domain.usecase.transaction.GetTransactionsUseCase
+import com.example.bluff.domain.usecase.transaction.UpdateTransactionUseCase
+
+/**
+ * Manual dependency injection container.
+ * Initialized once in BluffApplication and accessed as a singleton.
+ */
+class AppContainer(context: Context) {
+
+    // --- Infrastructure ---
+    private val database = BluffDatabase.create(context)
+    private val supabaseClient = SupabaseProvider.createClient(
+        url = BuildConfig.SUPABASE_URL,
+        key = BuildConfig.SUPABASE_ANON_KEY
+    )
+    val userPreferencesManager = UserPreferencesManager(context)
+    private fun getUserId() = userPreferencesManager.getUserIdBlocking()
+
+    // --- Repositories ---
+    val accountRepository = AccountRepositoryImpl(database, supabaseClient) { getUserId() }
+    val categoryRepository = CategoryRepositoryImpl(database, supabaseClient) { getUserId() }
+    val transactionRepository = TransactionRepositoryImpl(database, supabaseClient) { getUserId() }
+    val budgetRepository = BudgetRepositoryImpl(database, supabaseClient) { getUserId() }
+    val goalRepository = GoalRepositoryImpl(database, supabaseClient) { getUserId() }
+    val recurringTransactionRepository = RecurringTransactionRepositoryImpl(database, supabaseClient) { getUserId() }
+    val appSettingsRepository = AppSettingsRepositoryImpl(database, supabaseClient) { getUserId() }
+
+    // --- Use Cases ---
+    val getTransactionsUseCase = GetTransactionsUseCase(transactionRepository)
+    val addTransactionUseCase = AddTransactionUseCase(transactionRepository)
+    val updateTransactionUseCase = UpdateTransactionUseCase(transactionRepository)
+    val deleteTransactionUseCase = DeleteTransactionUseCase(transactionRepository)
+
+    val getAccountsUseCase = GetAccountsUseCase(accountRepository)
+    val addAccountUseCase = AddAccountUseCase(accountRepository)
+    val updateAccountUseCase = UpdateAccountUseCase(accountRepository)
+    val deleteAccountUseCase = DeleteAccountUseCase(accountRepository)
+
+    val getCategoriesUseCase = GetCategoriesUseCase(categoryRepository)
+    val addCategoryUseCase = AddCategoryUseCase(categoryRepository)
+
+    val getBudgetsUseCase = GetBudgetsUseCase(budgetRepository)
+    val upsertBudgetUseCase = UpsertBudgetUseCase(budgetRepository)
+    val deleteBudgetUseCase = DeleteBudgetUseCase(budgetRepository)
+
+    val getGoalsUseCase = GetGoalsUseCase(goalRepository)
+    val upsertGoalUseCase = UpsertGoalUseCase(goalRepository)
+    val deleteGoalUseCase = DeleteGoalUseCase(goalRepository)
+
+    val getRecurringTransactionsUseCase = GetRecurringTransactionsUseCase(recurringTransactionRepository)
+    val upsertRecurringTransactionUseCase = UpsertRecurringTransactionUseCase(recurringTransactionRepository)
+    val deleteRecurringTransactionUseCase = DeleteRecurringTransactionUseCase(recurringTransactionRepository)
+
+    val getAnalyticsUseCase = GetAnalyticsUseCase(transactionRepository)
+
+    val getAppSettingsUseCase = GetAppSettingsUseCase(appSettingsRepository)
+    val updateAppSettingsUseCase = UpdateAppSettingsUseCase(appSettingsRepository)
+
+    companion object {
+        @Volatile
+        private var _instance: AppContainer? = null
+
+        val instance: AppContainer
+            get() = _instance ?: error("AppContainer not initialized. Call init() first.")
+
+        fun init(context: Context) {
+            if (_instance == null) {
+                synchronized(this) {
+                    if (_instance == null) {
+                        _instance = AppContainer(context.applicationContext)
+                    }
+                }
+            }
+        }
+    }
+}

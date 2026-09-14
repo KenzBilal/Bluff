@@ -1,0 +1,8 @@
+# Build folders
+build/
+android/.gradle/
+android/app/build/
+android/local.properties
+.idea/
+*.iml
+.DS_Store
