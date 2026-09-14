@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -136,7 +137,8 @@ fun GoalsScreen(onBack: () -> Unit) {
                 items(goals) { goal ->
                     GoalCard(
                         goal = goal,
-                        onClick = { editingGoal = goal; showAddEdit = true }
+                        onClick = { editingGoal = goal; showAddEdit = true },
+                        onDelete = { vm.deleteGoal(goal.id) }
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -156,7 +158,7 @@ fun GoalsScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun GoalCard(goal: Goal, onClick: () -> Unit) {
+private fun GoalCard(goal: Goal, onClick: () -> Unit, onDelete: () -> Unit) {
     val progress = if (goal.targetAmountMinor > 0) {
         goal.currentAmountMinor.toFloat() / goal.targetAmountMinor.toFloat()
     } else 0f
@@ -173,12 +175,19 @@ private fun GoalCard(goal: Goal, onClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Text(goal.icon, fontSize = 24.sp)
                 Spacer(Modifier.width(12.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(goal.name, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     Text("${goal.currentAmountMinor.toDisplayAmount()} / ${goal.targetAmountMinor.toDisplayAmount()}", color = TextSecondary, fontSize = 14.sp)
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete goal",
+                        tint = TextSecondary
+                    )
                 }
             }
             Spacer(Modifier.height(16.dp))

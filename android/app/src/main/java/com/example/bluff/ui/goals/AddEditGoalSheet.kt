@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,7 @@ import com.example.bluff.theme.Background
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.ui.components.BluffButton
 import com.example.bluff.ui.components.BluffTextField
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,7 +29,7 @@ import java.time.LocalDate
 fun AddEditGoalSheet(
     goal: Goal?,
     onDismiss: () -> Unit,
-    onSave: (name: String, targetAmount: Long, targetDate: LocalDate?) -> Unit
+    onSave: suspend (name: String, targetAmount: Long, targetDate: LocalDate?) -> Unit
 ) {
     var name by remember { mutableStateOf(goal?.name ?: "") }
     var targetAmount by remember { mutableStateOf(goal?.targetAmountMinor?.toString() ?: "") }
@@ -37,6 +39,7 @@ fun AddEditGoalSheet(
         onDismissRequest = onDismiss,
         containerColor = Background
     ) {
+        val coroutineScope = rememberCoroutineScope()
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = if (goal != null) "Edit Goal" else "New Goal",
@@ -79,8 +82,10 @@ fun AddEditGoalSheet(
                         val date = try {
                             if (targetDateStr.isNotBlank()) LocalDate.parse(targetDateStr) else null
                         } catch (e: Exception) { null }
-                        onSave(name, targetAmount.toLongOrNull() ?: 0L, date)
-                        onDismiss()
+                        coroutineScope.launch {
+                            onSave(name, targetAmount.toLongOrNull() ?: 0L, date)
+                            onDismiss()
+                        }
                     }
                 }
             )
