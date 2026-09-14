@@ -1,6 +1,5 @@
 package com.example.bluff.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -13,46 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.lifecycle.viewModelScope
-import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.AppSettings
-import com.example.bluff.domain.usecase.settings.GetAppSettingsUseCase
-import com.example.bluff.domain.usecase.settings.UpdateAppSettingsUseCase
 import com.example.bluff.theme.Background
-import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-
-class SettingsViewModel(
-    private val getSettingsUseCase: GetAppSettingsUseCase,
-    private val updateSettingsUseCase: UpdateAppSettingsUseCase
-) : ViewModel() {
-    val settings = getSettingsUseCase()
-
-    fun updateSetting(current: AppSettings, updater: (AppSettings) -> AppSettings) {
-        viewModelScope.launch(Dispatchers.IO) {
-            updateSettingsUseCase(updater(current))
-        }
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val container = AppContainer.instance
-                SettingsViewModel(container.getAppSettingsUseCase, container.updateAppSettingsUseCase)
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,34 +51,52 @@ fun SettingsScreen(onBack: () -> Unit) {
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item { Spacer(Modifier.height(16.dp)) }
-            
-            settings?.let { currentSettings ->
+
+            settings?.let { s ->
+                // Personal
                 item {
-                    Text("Notifications", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.height(8.dp))
-                    SettingSwitchItem("Budget Alerts", currentSettings.notificationsBudget) {
-                        vm.updateSetting(currentSettings) { s -> s.copy(notificationsBudget = it) }
+                    SectionHeader("Personal")
+                    SettingTextItem("Name", s.userName.ifBlank { "Not set" })
+                    SettingTextItem("Currency", "${s.currencySymbol} (${s.currencyCode})")
+                    SettingTextItem("Financial Month Start", "Day ${s.financialMonthStartDay}")
+                    Spacer(Modifier.height(24.dp))
+                }
+
+                // Appearance
+                item {
+                    SectionHeader("Appearance")
+                    SettingTextItem("Accent Color", s.accentColor)
+                    SettingTextItem("Layout Density", s.layoutDensity)
+                    SettingTextItem("Animation Intensity", s.animationIntensity)
+                    Spacer(Modifier.height(24.dp))
+                }
+
+                // Notifications
+                item {
+                    SectionHeader("Notifications")
+                    SettingSwitchItem("Budget Alerts", s.notificationsBudget) {
+                        vm.updateSetting(s) { st -> st.copy(notificationsBudget = it) }
                     }
-                    SettingSwitchItem("Recurring Transactions", currentSettings.notificationsRecurring) {
-                        vm.updateSetting(currentSettings) { s -> s.copy(notificationsRecurring = it) }
+                    SettingSwitchItem("Recurring Transactions", s.notificationsRecurring) {
+                        vm.updateSetting(s) { st -> st.copy(notificationsRecurring = it) }
                     }
-                    SettingSwitchItem("Goal Progress", currentSettings.notificationsGoals) {
-                        vm.updateSetting(currentSettings) { s -> s.copy(notificationsGoals = it) }
+                    SettingSwitchItem("Goal Progress", s.notificationsGoals) {
+                        vm.updateSetting(s) { st -> st.copy(notificationsGoals = it) }
                     }
-                    SettingSwitchItem("Daily Reminder", currentSettings.notificationsDailyReminder) {
-                        vm.updateSetting(currentSettings) { s -> s.copy(notificationsDailyReminder = it) }
+                    SettingSwitchItem("Daily Reminder", s.notificationsDailyReminder) {
+                        vm.updateSetting(s) { st -> st.copy(notificationsDailyReminder = it) }
                     }
                     Spacer(Modifier.height(24.dp))
                 }
-                
+
+                // Security
                 item {
-                    Text("Security", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.height(8.dp))
-                    SettingSwitchItem("Require PIN", currentSettings.pinEnabled) {
-                        vm.updateSetting(currentSettings) { s -> s.copy(pinEnabled = it) }
+                    SectionHeader("Security")
+                    SettingSwitchItem("Require PIN", s.pinEnabled) {
+                        vm.updateSetting(s) { st -> st.copy(pinEnabled = it) }
                     }
-                    SettingSwitchItem("Biometric Authentication", currentSettings.biometricEnabled) {
-                        vm.updateSetting(currentSettings) { s -> s.copy(biometricEnabled = it) }
+                    SettingSwitchItem("Biometric Authentication", s.biometricEnabled) {
+                        vm.updateSetting(s) { st -> st.copy(biometricEnabled = it) }
                     }
                 }
             } ?: run {
@@ -128,11 +111,27 @@ fun SettingsScreen(onBack: () -> Unit) {
 }
 
 @Composable
+private fun SectionHeader(title: String) {
+    Text(title, color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+    Spacer(Modifier.height(8.dp))
+}
+
+@Composable
+private fun SettingTextItem(title: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(title, color = TextSecondary, fontSize = 16.sp)
+        Text(value, color = TextPrimary, fontSize = 16.sp)
+    }
+}
+
+@Composable
 private fun SettingSwitchItem(title: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
