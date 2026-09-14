@@ -39,9 +39,6 @@ import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.categories.CategoriesViewModel
 import com.example.bluff.ui.util.toDisplayAmount
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -52,11 +49,6 @@ class BudgetViewModel(
 ) : ViewModel() {
 
     val budgets = getBudgetsUseCase.getActive()
-
-    private val _editingBudget = MutableStateFlow<Budget?>(null)
-    val editingBudget: StateFlow<Budget?> = _editingBudget.asStateFlow()
-
-    fun setEditingBudget(budget: Budget?) { _editingBudget.value = budget }
 
     fun saveBudget(name: String, amount: Long, period: BudgetPeriod, categoryId: String?, existingId: String? = null) {
         viewModelScope.launch {
@@ -72,7 +64,6 @@ class BudgetViewModel(
                 endDate = now.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth())
             )
             upsertBudgetUseCase(budget)
-            _editingBudget.value = null
         }
     }
 
