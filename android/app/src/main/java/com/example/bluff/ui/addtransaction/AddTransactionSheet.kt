@@ -18,11 +18,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.theme.Background
+import com.example.bluff.ui.components.AccountPicker
 import com.example.bluff.ui.components.BluffAmountInput
 import com.example.bluff.ui.components.BluffButton
 import com.example.bluff.ui.components.BluffChip
@@ -49,6 +51,8 @@ fun AddTransactionSheet(
     val saveResult by viewModel.saveResult.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    var showAccountPicker by remember { mutableStateOf(false) }
+    var showToAccountPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(saveResult) {
         when (val result = saveResult) {
@@ -99,6 +103,21 @@ fun AddTransactionSheet(
                         modifier = Modifier.weight(1f)
                     )
                 }
+                if (accounts.size > 3) {
+                    BluffChip(
+                        text = "View all",
+                        selected = false,
+                        onClick = { showAccountPicker = true },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            if (showAccountPicker) {
+                AccountPicker(
+                    accounts = accounts,
+                    onAccountSelected = { viewModel.setAccountId(it.id) },
+                    onDismiss = { showAccountPicker = false }
+                )
             }
 
             if (type == TransactionType.TRANSFER) {
@@ -120,6 +139,21 @@ fun AddTransactionSheet(
                             modifier = Modifier.weight(1f)
                         )
                     }
+                    if (accounts.filter { it.id != selectedAccountId }.size > 3) {
+                        BluffChip(
+                            text = "View all",
+                            selected = false,
+                            onClick = { showToAccountPicker = true },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+                if (showToAccountPicker) {
+                    AccountPicker(
+                        accounts = accounts.filter { it.id != selectedAccountId },
+                        onAccountSelected = { viewModel.setToAccountId(it.id) },
+                        onDismiss = { showToAccountPicker = false }
+                    )
                 }
             }
 
