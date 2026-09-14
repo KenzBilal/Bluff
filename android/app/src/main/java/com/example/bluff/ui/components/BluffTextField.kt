@@ -17,9 +17,10 @@ import com.example.bluff.theme.TextSecondary
 fun BluffTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
+    label: String = "",
     modifier: Modifier = Modifier,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    readOnly: Boolean = false
 ) {
     OutlinedTextField(
         value = value,
@@ -27,6 +28,7 @@ fun BluffTextField(
         label = { Text(label, color = TextSecondary) },
         modifier = modifier,
         singleLine = singleLine,
+        readOnly = readOnly,
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = TextPrimary,
