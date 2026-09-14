@@ -1,6 +1,7 @@
 package com.example.bluff.ui.categories
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,9 +9,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,29 +25,57 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.Category
+import com.example.bluff.domain.model.CategoryType
+import com.example.bluff.domain.usecase.category.AddCategoryUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
 import com.example.bluff.theme.Background
 import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
+import kotlinx.coroutines.launch
 
 class CategoriesViewModel(
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val addCategoryUseCase: AddCategoryUseCase
 ) : ViewModel() {
     val categories = getCategoriesUseCase.getAll()
+
+    fun saveCategory(
+        name: String,
+        type: CategoryType,
+        icon: String,
+        color: String,
+        existingId: String? = null
+    ) {
+        viewModelScope.launch {
+            val category = Category(
+                id = existingId ?: "",
+                userId = "",
+                name = name,
+                type = type,
+                icon = icon,
+                color = color
+            )
+            addCategoryUseCase(category)
+        }
+    }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = AppContainer.instance
-                CategoriesViewModel(container.getCategoriesUseCase)
+                CategoriesViewModel(
+                    container.getCategoriesUseCase,
+                    container.addCategoryUseCase
+                )
             }
         }
     }
@@ -53,6 +86,8 @@ class CategoriesViewModel(
 fun CategoriesScreen(onBack: () -> Unit) {
     val vm: CategoriesViewModel = viewModel(factory = CategoriesViewModel.Factory)
     val categories by vm.categories.collectAsStateWithLifecycle(initialValue = emptyList())
+    var showAddEdit by remember { mutableStateOf(false) }
+    var editingCategory by remember { mutableStateOf<Category?>(null) }
 
     Scaffold(
         topBar = {
@@ -69,6 +104,14 @@ fun CategoriesScreen(onBack: () -> Unit) {
                     navigationIconContentColor = TextPrimary
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { editingCategory = null; showAddEdit = true },
+                containerColor = Primary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add category")
+            }
         },
         containerColor = Background
     ) { innerPadding ->
@@ -88,16 +131,29 @@ fun CategoriesScreen(onBack: () -> Unit) {
                 }
             } else {
                 items(categories) { category ->
-                    CategoryCard(category)
+                    CategoryCard(
+                        category = category,
+                        onClick = { editingCategory = category; showAddEdit = true }
+                    )
                     Spacer(Modifier.height(12.dp))
                 }
             }
         }
     }
+
+    if (showAddEdit) {
+        AddEditCategorySheet(
+            category = editingCategory,
+            onDismiss = { showAddEdit = false },
+            onSave = { name, type, icon, color ->
+                vm.saveCategory(name, type, icon, color, editingCategory?.id)
+            }
+        )
+    }
 }
 
 @Composable
-private fun CategoryCard(category: Category) {
+private fun CategoryCard(category: Category, onClick: () -> Unit) {
     val parsedColor = try {
         Color(android.graphics.Color.parseColor(category.color))
     } catch (e: Exception) {
@@ -107,7 +163,7 @@ private fun CategoryCard(category: Category) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = CardColor,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
