@@ -1,14 +1,19 @@
 package com.example.bluff.ui.goals
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,29 +23,62 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.Goal
+import com.example.bluff.domain.usecase.goal.DeleteGoalUseCase
 import com.example.bluff.domain.usecase.goal.GetGoalsUseCase
+import com.example.bluff.domain.usecase.goal.UpsertGoalUseCase
 import com.example.bluff.theme.Background
 import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.util.toDisplayAmount
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class GoalsViewModel(
-    private val getGoalsUseCase: GetGoalsUseCase
+    private val getGoalsUseCase: GetGoalsUseCase,
+    private val upsertGoalUseCase: UpsertGoalUseCase,
+    private val deleteGoalUseCase: DeleteGoalUseCase
 ) : ViewModel() {
+
     val goals = getGoalsUseCase.getActive()
+
+    fun saveGoal(name: String, targetAmount: Long, targetDate: LocalDate?, existingId: String? = null) {
+        viewModelScope.launch {
+            val goal = Goal(
+                id = existingId ?: "",
+                userId = "",
+                name = name,
+                targetAmountMinor = targetAmount,
+                targetDate = targetDate,
+                icon = "🎯",
+                color = "#6C63FF"
+            )
+            upsertGoalUseCase(goal)
+        }
+    }
+
+    fun deleteGoal(id: String) {
+        viewModelScope.launch {
+            deleteGoalUseCase(id)
+        }
+    }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = AppContainer.instance
-                GoalsViewModel(container.getGoalsUseCase)
+                GoalsViewModel(
+                    container.getGoalsUseCase,
+                    container.upsertGoalUseCase,
+                    container.deleteGoalUseCase
+                )
             }
         }
     }
@@ -51,6 +89,8 @@ class GoalsViewModel(
 fun GoalsScreen(onBack: () -> Unit) {
     val vm: GoalsViewModel = viewModel(factory = GoalsViewModel.Factory)
     val goals by vm.goals.collectAsStateWithLifecycle(initialValue = emptyList())
+    var showAddEdit by remember { mutableStateOf(false) }
+    var editingGoal by remember { mutableStateOf<Goal?>(null) }
 
     Scaffold(
         topBar = {
@@ -67,6 +107,14 @@ fun GoalsScreen(onBack: () -> Unit) {
                     navigationIconContentColor = TextPrimary
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { editingGoal = null; showAddEdit = true },
+                containerColor = Primary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add goal")
+            }
         },
         containerColor = Background
     ) { innerPadding ->
@@ -86,20 +134,33 @@ fun GoalsScreen(onBack: () -> Unit) {
                 }
             } else {
                 items(goals) { goal ->
-                    GoalCard(goal)
+                    GoalCard(
+                        goal = goal,
+                        onClick = { editingGoal = goal; showAddEdit = true }
+                    )
                     Spacer(Modifier.height(12.dp))
                 }
             }
         }
     }
+
+    if (showAddEdit) {
+        AddEditGoalSheet(
+            goal = editingGoal,
+            onDismiss = { showAddEdit = false },
+            onSave = { name, target, date ->
+                vm.saveGoal(name, target, date, editingGoal?.id)
+            }
+        )
+    }
 }
 
 @Composable
-private fun GoalCard(goal: Goal) {
+private fun GoalCard(goal: Goal, onClick: () -> Unit) {
     val progress = if (goal.targetAmountMinor > 0) {
         goal.currentAmountMinor.toFloat() / goal.targetAmountMinor.toFloat()
     } else 0f
-    
+
     val parsedColor = try {
         Color(android.graphics.Color.parseColor(goal.color))
     } catch (e: Exception) {
@@ -109,7 +170,7 @@ private fun GoalCard(goal: Goal) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = CardColor,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -127,6 +188,10 @@ private fun GoalCard(goal: Goal) {
                 color = parsedColor,
                 trackColor = CardColor,
             )
+            if (goal.targetDate != null) {
+                Spacer(Modifier.height(8.dp))
+                Text("Target: ${goal.targetDate}", color = TextSecondary, fontSize = 12.sp)
+            }
         }
     }
 }
