@@ -15,10 +15,11 @@ import com.example.bluff.domain.usecase.transaction.GetTransactionsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
 
 class HomeViewModel(
@@ -35,21 +36,15 @@ class HomeViewModel(
     val greeting: StateFlow<String> = _greeting.asStateFlow()
 
     val totalBalance: StateFlow<Long> = getAccountsUseCase.getActive()
-        .combine(MutableStateFlow(Unit)) { accounts, _ ->
-            accounts.sumOf { it.currentBalanceMinor }
-        }
+        .map { accounts -> accounts.sumOf { it.currentBalanceMinor } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
     val monthlyIncome: StateFlow<Long> = getTransactionsUseCase.getByDateRange(monthStart, monthEnd)
-        .combine(MutableStateFlow(Unit)) { txns, _ ->
-            txns.filter { it.type == TransactionType.INCOME }.sumOf { it.amountMinor }
-        }
+        .map { txns -> txns.filter { it.type == TransactionType.INCOME }.sumOf { it.amountMinor } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
     val monthlySpent: StateFlow<Long> = getTransactionsUseCase.getByDateRange(monthStart, monthEnd)
-        .combine(MutableStateFlow(Unit)) { txns, _ ->
-            txns.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amountMinor }
-        }
+        .map { txns -> txns.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amountMinor } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
     val recentTransactions: StateFlow<List<Transaction>> = getTransactionsUseCase.getRecent()
@@ -63,7 +58,7 @@ class HomeViewModel(
     }
 
     private fun updateGreeting() {
-        val hour = java.time.LocalTime.now().hour
+        val hour = LocalTime.now().hour
         _greeting.value = when {
             hour < 12 -> "Good morning"
             hour < 17 -> "Good afternoon"
