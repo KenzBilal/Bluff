@@ -179,6 +179,22 @@ fun AnalyticsScreen() {
             Spacer(Modifier.height(20.dp))
         }
 
+        // Empty state when no data exists
+        if (summary.totalSpentMinor == 0L && summary.totalIncomeMinor == 0L) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("📊", fontSize = 48.sp)
+                        Spacer(Modifier.height(8.dp))
+                        Text("No data for this period", color = TextSecondary, fontSize = 16.sp)
+                    }
+                }
+            }
+        }
+
         // Donut chart + breakdown
         if (summary.categoryBreakdown.isNotEmpty()) {
             item {
