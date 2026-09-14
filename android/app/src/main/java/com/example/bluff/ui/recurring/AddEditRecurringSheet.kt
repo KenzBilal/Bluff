@@ -17,7 +17,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.bluff.domain.model.Account
-import com.example.bluff.domain.model.Category
 import com.example.bluff.domain.model.RecurrenceFrequency
 import com.example.bluff.domain.model.RecurringTransaction
 import com.example.bluff.domain.model.TransactionType
@@ -33,7 +32,6 @@ import java.time.LocalDate
 fun AddEditRecurringSheet(
     recurring: RecurringTransaction?,
     accounts: List<Account>,
-    categories: List<Category>,
     onDismiss: () -> Unit,
     onSave: (name: String, amount: Long, type: TransactionType, accountId: String, categoryId: String?, frequency: RecurrenceFrequency, startDate: LocalDate) -> Unit
 ) {

@@ -2,12 +2,14 @@ package com.example.bluff.ui.recurring
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,7 +33,6 @@ import com.example.bluff.domain.model.RecurrenceFrequency
 import com.example.bluff.domain.model.RecurringTransaction
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
-import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
 import com.example.bluff.domain.usecase.recurring.DeleteRecurringTransactionUseCase
 import com.example.bluff.domain.usecase.recurring.GetRecurringTransactionsUseCase
 import com.example.bluff.domain.usecase.recurring.UpsertRecurringTransactionUseCase
@@ -43,9 +44,6 @@ import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.util.toDisplayAmount
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -56,11 +54,6 @@ class RecurringViewModel(
 ) : ViewModel() {
 
     val recurringTransactions = getRecurringUseCase.getActive()
-
-    private val _editingRecurring = MutableStateFlow<RecurringTransaction?>(null)
-    val editingRecurring: StateFlow<RecurringTransaction?> = _editingRecurring.asStateFlow()
-
-    fun setEditingRecurring(recurring: RecurringTransaction?) { _editingRecurring.value = recurring }
 
     fun saveRecurring(name: String, amount: Long, type: TransactionType, accountId: String, categoryId: String?, frequency: RecurrenceFrequency, startDate: LocalDate, existingId: String? = null) {
         viewModelScope.launch {
@@ -77,7 +70,6 @@ class RecurringViewModel(
                 nextRunDate = startDate
             )
             upsertRecurringUseCase(recurring)
-            _editingRecurring.value = null
         }
     }
 
@@ -110,8 +102,6 @@ fun RecurringScreen(onBack: () -> Unit) {
     var editingRecurring by remember { mutableStateOf<RecurringTransaction?>(null) }
 
     val accounts by AppContainer.instance.getAccountsUseCase.getActive()
-        .collectAsStateWithLifecycle(initialValue = emptyList())
-    val categories by AppContainer.instance.getCategoriesUseCase.getAll()
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
     Scaffold(
@@ -158,7 +148,8 @@ fun RecurringScreen(onBack: () -> Unit) {
                 items(recurring) { recur ->
                     RecurringCard(
                         recurring = recur,
-                        onClick = { editingRecurring = recur; showAddEdit = true }
+                        onClick = { editingRecurring = recur; showAddEdit = true },
+                        onDelete = { vm.deleteRecurring(recur.id) }
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -170,7 +161,6 @@ fun RecurringScreen(onBack: () -> Unit) {
         AddEditRecurringSheet(
             recurring = editingRecurring,
             accounts = accounts,
-            categories = categories,
             onDismiss = { showAddEdit = false },
             onSave = { name, amount, type, accountId, categoryId, frequency, startDate ->
                 vm.saveRecurring(name, amount, type, accountId, categoryId, frequency, startDate, editingRecurring?.id)
@@ -180,7 +170,7 @@ fun RecurringScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun RecurringCard(recurring: RecurringTransaction, onClick: () -> Unit) {
+private fun RecurringCard(recurring: RecurringTransaction, onClick: () -> Unit, onDelete: () -> Unit) {
     val amountColor = when (recurring.type) {
         TransactionType.INCOME -> IncomeColor
         TransactionType.EXPENSE -> ExpenseColor
@@ -201,6 +191,15 @@ private fun RecurringCard(recurring: RecurringTransaction, onClick: () -> Unit) 
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(recurring.amountMinor.toDisplayAmount(), color = amountColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.weight(1f))
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete recurring",
+                        tint = TextSecondary
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = Primary.copy(alpha = 0.2f)
