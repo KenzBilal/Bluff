@@ -11,6 +11,8 @@ class GetTransactionsUseCase(private val repository: TransactionRepository) {
     fun getByCategory(categoryId: String): Flow<List<Transaction>> = repository.getTransactionsByCategory(categoryId)
     fun getByDateRange(startDate: LocalDate, endDate: LocalDate): Flow<List<Transaction>> =
         repository.getTransactionsByDateRange(startDate, endDate)
+    fun getTransactionsByDate(date: LocalDate): Flow<List<Transaction>> =
+        repository.getTransactionsByDate(date)
     fun search(query: String): Flow<List<Transaction>> = repository.searchTransactions(query)
     fun getRecent(): Flow<List<Transaction>> = repository.getRecentTransactions()
 }

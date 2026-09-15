@@ -18,6 +18,7 @@ interface TransactionRepository {
     fun getTransactionsByAccount(accountId: String): Flow<List<Transaction>>
     fun getTransactionsByCategory(categoryId: String): Flow<List<Transaction>>
     fun getTransactionsByDateRange(startDate: LocalDate, endDate: LocalDate): Flow<List<Transaction>>
+    fun getTransactionsByDate(date: LocalDate): Flow<List<Transaction>>
     fun searchTransactions(query: String): Flow<List<Transaction>>
     fun getRecentTransactions(): Flow<List<Transaction>>
     suspend fun addTransaction(transaction: Transaction): Result<String>
@@ -45,6 +46,9 @@ class TransactionRepositoryImpl(
             startDate.toString(),
             endDate.toString()
         ).map { it.map { e -> e.toModel() } }
+
+    override fun getTransactionsByDate(date: LocalDate): Flow<List<Transaction>> =
+        db.transactionDao().getTransactionsByDate(date.toString()).map { it.map { e -> e.toModel() } }
 
     override fun searchTransactions(query: String): Flow<List<Transaction>> =
         db.transactionDao().searchTransactions(query).map { it.map { e -> e.toModel() } }

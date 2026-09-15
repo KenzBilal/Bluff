@@ -28,6 +28,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE note LIKE '%' || :query || '%' ORDER BY transactionDate DESC LIMIT 100")
     fun searchTransactions(query: String): Flow<List<TransactionEntity>>
 
+    @Query("SELECT * FROM transactions WHERE transactionDate = :date ORDER BY createdAt ASC")
+    fun getTransactionsByDate(date: String): Flow<List<TransactionEntity>>
+
     @Query("SELECT * FROM transactions ORDER BY transactionDate DESC, createdAt DESC LIMIT 10")
     fun getRecentTransactions(): Flow<List<TransactionEntity>>
 

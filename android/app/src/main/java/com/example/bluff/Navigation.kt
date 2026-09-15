@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.MoreHoriz
@@ -42,6 +43,8 @@ import com.example.bluff.ui.accounts.AccountsScreen
 import com.example.bluff.ui.addtransaction.AddTransactionSheet
 import com.example.bluff.ui.analytics.AnalyticsScreen
 import com.example.bluff.ui.budget.BudgetScreen
+import com.example.bluff.ui.calendar.CalendarScreen
+import com.example.bluff.ui.calendar.DayDetailScreen
 import com.example.bluff.ui.categories.CategoriesScreen
 import com.example.bluff.ui.goals.GoalsScreen
 import com.example.bluff.ui.home.HomeScreen
@@ -51,6 +54,7 @@ import com.example.bluff.ui.recurring.RecurringScreen
 import com.example.bluff.ui.settings.SettingsScreen
 import com.example.bluff.ui.transactions.TransactionsScreen
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 @Composable
 fun MainNavigation() {
@@ -71,7 +75,7 @@ private fun BluffMainApp() {
     var showAddTransaction by remember { mutableStateOf(false) }
 
     val currentKey = backStack.lastOrNull()
-    val isBottomNavVisible = currentKey in setOf(HomeKey, TransactionsKey, AnalyticsKey, MoreKey)
+    val isBottomNavVisible = currentKey in setOf(HomeKey, CalendarKey, TransactionsKey, AnalyticsKey, MoreKey)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -117,6 +121,19 @@ private fun BluffMainApp() {
                 modifier = Modifier.padding(innerPadding),
                 entryProvider = entryProvider {
                     entry<HomeKey> { HomeScreen(onNavigateToTransactionDetail = {}) }
+                    entry<CalendarKey> {
+                        CalendarScreen(
+                            onDateSelected = { date ->
+                                backStack.add(DayDetailKey(date.toString()))
+                            }
+                        )
+                    }
+                    entry<DayDetailKey> { key ->
+                        DayDetailScreen(
+                            date = LocalDate.parse(key.date),
+                            onBack = { backStack.removeLastOrNull() }
+                        )
+                    }
                     entry<TransactionsKey> { TransactionsScreen() }
                     entry<AnalyticsKey> { AnalyticsScreen() }
                     entry<MoreKey> {
@@ -171,6 +188,7 @@ private data class BottomNavItem(
 
 private val bottomNavItems = listOf(
     BottomNavItem(HomeKey, "Home", Icons.Default.Home),
+    BottomNavItem(CalendarKey, "Calendar", Icons.Default.CalendarMonth),
     BottomNavItem(TransactionsKey, "Ledger", Icons.Default.List),
     BottomNavItem(AnalyticsKey, "Analytics", Icons.Default.Analytics),
     BottomNavItem(MoreKey, "More", Icons.Default.MoreHoriz)
