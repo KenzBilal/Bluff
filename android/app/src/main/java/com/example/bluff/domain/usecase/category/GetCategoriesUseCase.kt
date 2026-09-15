@@ -17,6 +17,8 @@ class GetCategoriesUseCase(private val repository: CategoryRepository) {
     fun getExpenseCategories(): Flow<List<Category>> = repository.getExpenseCategories()
     fun getIncomeCategories(): Flow<List<Category>> = repository.getIncomeCategories()
 
+    suspend fun getMonthlySpendByCategory(): Map<String, Long> = repository.getMonthlySpendByCategory()
+
     suspend fun getCategoryTree(): List<Category> {
         return repository.getCategoryTree()
     }
