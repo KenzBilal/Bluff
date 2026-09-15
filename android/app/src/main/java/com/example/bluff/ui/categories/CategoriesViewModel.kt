@@ -10,6 +10,9 @@ import com.example.bluff.domain.model.Category
 import com.example.bluff.domain.model.CategoryType
 import com.example.bluff.domain.usecase.category.AddCategoryUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CategoriesViewModel(
@@ -18,12 +21,26 @@ class CategoriesViewModel(
 ) : ViewModel() {
     val categories = getCategoriesUseCase.getAll()
 
+    private val _categoryTree = MutableStateFlow<List<Category>>(emptyList())
+    val categoryTree: StateFlow<List<Category>> = _categoryTree.asStateFlow()
+
+    init {
+        loadCategoryTree()
+    }
+
+    fun loadCategoryTree() {
+        viewModelScope.launch {
+            _categoryTree.value = getCategoriesUseCase.getCategoryTree()
+        }
+    }
+
     fun saveCategory(
         name: String,
         type: CategoryType,
         icon: String,
         color: String,
-        existingId: String? = null
+        existingId: String? = null,
+        parentId: String? = null
     ) {
         viewModelScope.launch {
             val category = Category(
@@ -32,9 +49,11 @@ class CategoriesViewModel(
                 name = name,
                 type = type,
                 icon = icon,
-                color = color
+                color = color,
+                parentId = parentId
             )
             addCategoryUseCase(category)
+            loadCategoryTree()
         }
     }
 

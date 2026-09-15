@@ -19,9 +19,14 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,13 +70,19 @@ private val defaultColors = listOf(
 @Composable
 fun AddEditCategorySheet(
     category: Category?,
+    allCategories: List<Category>,
     onDismiss: () -> Unit,
-    onSave: (name: String, type: CategoryType, icon: String, color: String) -> Unit
+    onSave: (name: String, type: CategoryType, icon: String, color: String, parentId: String?) -> Unit
 ) {
     var name by remember { mutableStateOf(category?.name ?: "") }
     var type by remember { mutableStateOf(category?.type ?: CategoryType.EXPENSE) }
     var icon by remember { mutableStateOf(category?.icon ?: "📦") }
     var color by remember { mutableStateOf(category?.color ?: "#888888") }
+    var parentId by remember { mutableStateOf(category?.parentId) }
+    var parentExpanded by remember { mutableStateOf(false) }
+
+    val rootCategories = allCategories.filter { it.parentId == null }
+    val selectedParent = allCategories.find { it.id == parentId }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -104,6 +115,47 @@ fun AddEditCategorySheet(
                         onClick = { type = t },
                         modifier = Modifier.weight(1f)
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Parent Category", color = TextPrimary)
+            Spacer(modifier = Modifier.height(8.dp))
+            ExposedDropdownMenuBox(
+                expanded = parentExpanded,
+                onExpandedChange = { parentExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = selectedParent?.let { "${it.icon} ${it.name}" } ?: "None (Root Category)",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                )
+                ExposedDropdownMenu(
+                    expanded = parentExpanded,
+                    onDismissRequest = { parentExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("None (Root Category)") },
+                        onClick = {
+                            parentId = null
+                            parentExpanded = false
+                        }
+                    )
+                    rootCategories.forEach { rootCat ->
+                        DropdownMenuItem(
+                            text = { Text("${rootCat.icon} ${rootCat.name}") },
+                            onClick = {
+                                parentId = rootCat.id
+                                parentExpanded = false
+                            }
+                        )
+                    }
                 }
             }
 
@@ -166,7 +218,7 @@ fun AddEditCategorySheet(
                 text = if (category != null) "Update" else "Create",
                 onClick = {
                     if (name.isNotBlank()) {
-                        onSave(name, type, icon, color)
+                        onSave(name, type, icon, color, parentId)
                         onDismiss()
                     }
                 }

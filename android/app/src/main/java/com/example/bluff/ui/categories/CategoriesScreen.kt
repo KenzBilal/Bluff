@@ -32,13 +32,32 @@ import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 
+private data class FlatCategory(
+    val category: Category,
+    val depth: Int
+)
+
+private fun flattenTree(categories: List<Category>, depth: Int = 0): List<FlatCategory> {
+    val result = mutableListOf<FlatCategory>()
+    for (category in categories) {
+        result.add(FlatCategory(category, depth))
+        if (category.children.isNotEmpty()) {
+            result.addAll(flattenTree(category.children, depth + 1))
+        }
+    }
+    return result
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(onBack: () -> Unit) {
     val vm: CategoriesViewModel = viewModel(factory = CategoriesViewModel.Factory)
     val categories by vm.categories.collectAsStateWithLifecycle(initialValue = emptyList())
+    val categoryTree by vm.categoryTree.collectAsStateWithLifecycle()
     var showAddEdit by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<Category?>(null) }
+
+    val flatCategories = remember(categoryTree) { flattenTree(categoryTree) }
 
     Scaffold(
         topBar = {
@@ -74,17 +93,18 @@ fun CategoriesScreen(onBack: () -> Unit) {
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item { Spacer(Modifier.height(16.dp)) }
-            if (categories.isEmpty()) {
+            if (flatCategories.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
                         Text("No categories", color = TextSecondary)
                     }
                 }
             } else {
-                items(categories) { category ->
+                items(flatCategories) { flat ->
                     CategoryCard(
-                        category = category,
-                        onClick = { editingCategory = category; showAddEdit = true }
+                        category = flat.category,
+                        modifier = Modifier.padding(start = (flat.depth * 24).dp),
+                        onClick = { editingCategory = flat.category; showAddEdit = true }
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -95,16 +115,21 @@ fun CategoriesScreen(onBack: () -> Unit) {
     if (showAddEdit) {
         AddEditCategorySheet(
             category = editingCategory,
+            allCategories = categories,
             onDismiss = { showAddEdit = false },
-            onSave = { name, type, icon, color ->
-                vm.saveCategory(name, type, icon, color, editingCategory?.id)
+            onSave = { name, type, icon, color, parentId ->
+                vm.saveCategory(name, type, icon, color, editingCategory?.id, parentId)
             }
         )
     }
 }
 
 @Composable
-private fun CategoryCard(category: Category, onClick: () -> Unit) {
+private fun CategoryCard(
+    category: Category,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     val parsedColor = try {
         Color(android.graphics.Color.parseColor(category.color))
     } catch (e: Exception) {
@@ -114,7 +139,7 @@ private fun CategoryCard(category: Category, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = CardColor,
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
