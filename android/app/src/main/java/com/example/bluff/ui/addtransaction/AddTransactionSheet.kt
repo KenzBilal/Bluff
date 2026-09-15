@@ -30,7 +30,7 @@ import com.example.bluff.ui.components.BluffButton
 import com.example.bluff.ui.components.BluffChip
 import com.example.bluff.ui.components.BluffSectionHeader
 import com.example.bluff.ui.components.BluffTextField
-import com.example.bluff.ui.components.CategoryPickerGrid
+import com.example.bluff.ui.components.CategoryTreePicker
 import com.example.bluff.ui.components.NumericKeypad
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +49,9 @@ fun AddTransactionSheet(
     val expenseCategories by viewModel.expenseCategories.collectAsState()
     val incomeCategories by viewModel.incomeCategories.collectAsState()
     val saveResult by viewModel.saveResult.collectAsState()
+    val categoryTree by viewModel.categoryTree.collectAsState()
+    val quickSuggestions by viewModel.quickSuggestions.collectAsState()
+    val monthlySpend by viewModel.monthlySpend.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     var showAccountPicker by remember { mutableStateOf(false) }
@@ -160,12 +163,14 @@ fun AddTransactionSheet(
             if (type != TransactionType.TRANSFER) {
                 Spacer(modifier = Modifier.height(8.dp))
                 BluffSectionHeader(title = "Category")
-                val categories = if (type == TransactionType.EXPENSE) expenseCategories else incomeCategories
-                CategoryPickerGrid(
+                val categories = if (type == TransactionType.EXPENSE) categoryTree else incomeCategories
+                CategoryTreePicker(
                     categories = categories,
                     selectedCategoryId = selectedCategoryId,
                     onCategorySelected = { viewModel.setCategoryId(it.id) },
-                    modifier = Modifier.height(200.dp)
+                    quickSuggestions = quickSuggestions,
+                    monthlySpend = monthlySpend,
+                    modifier = Modifier.height(300.dp)
                 )
             }
 
