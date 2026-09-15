@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,6 +36,7 @@ import com.example.bluff.ui.components.BluffSectionHeader
 import com.example.bluff.ui.components.BluffTextField
 import com.example.bluff.ui.components.CategoryTreePicker
 import com.example.bluff.ui.components.NumericKeypad
+import com.example.bluff.ui.util.toDisplayAmount
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,6 +61,7 @@ fun AddTransactionSheet(
     val snackbarHostState = remember { SnackbarHostState() }
     var showAccountPicker by remember { mutableStateOf(false) }
     var showToAccountPicker by remember { mutableStateOf(false) }
+    var showConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(saveResult) {
         when (val result = saveResult) {
@@ -192,10 +198,47 @@ fun AddTransactionSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            BluffButton(text = "Save Transaction", onClick = { viewModel.save() })
+            BluffButton(text = "Save Transaction", onClick = { showConfirmDialog = true })
             Spacer(modifier = Modifier.height(16.dp))
         }
 
         SnackbarHost(hostState = snackbarHostState)
+    }
+
+    // Confirmation dialog
+    if (showConfirmDialog) {
+        val accountName = accounts.find { it.id == selectedAccountId }?.name ?: ""
+        val categoryName = categoryTree.flatMap { root ->
+            listOf(root) + root.children.flatMap { level1 -> listOf(level1) + level1.children }
+        }.find { it.id == selectedCategoryId }?.name ?: ""
+        val typeLabel = when (type) {
+            TransactionType.EXPENSE -> "Expense"
+            TransactionType.INCOME -> "Income"
+            TransactionType.TRANSFER -> "Transfer"
+        }
+
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text("Confirm $typeLabel") },
+            text = {
+                Text(
+                    text = "₹${amount.toDisplayAmount().replace("₹", "")} → $categoryName\nAccount: $accountName" +
+                            if (note.isNotBlank()) "\nNote: $note" else ""
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showConfirmDialog = false
+                    viewModel.save()
+                }) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

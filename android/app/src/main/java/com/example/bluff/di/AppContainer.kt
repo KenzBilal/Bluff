@@ -90,6 +90,9 @@ class AppContainer(context: Context) {
     val getAppSettingsUseCase = GetAppSettingsUseCase(appSettingsRepository)
     val updateAppSettingsUseCase = UpdateAppSettingsUseCase(appSettingsRepository)
 
+    // --- Utility ---
+    val db get() = database
+
     companion object {
         @Volatile
         private var _instance: AppContainer? = null

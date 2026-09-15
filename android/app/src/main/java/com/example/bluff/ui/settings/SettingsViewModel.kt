@@ -24,6 +24,16 @@ class SettingsViewModel(
         }
     }
 
+    fun clearAllData() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val db = AppContainer.instance.db
+            db.transactionDao().deleteAll()
+            db.budgetDao().deleteAll()
+            db.goalDao().deleteAll()
+            db.recurringTransactionDao().deleteAll()
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

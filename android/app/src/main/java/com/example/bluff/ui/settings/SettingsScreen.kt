@@ -7,6 +7,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -98,6 +101,36 @@ fun SettingsScreen(onBack: () -> Unit) {
                     SettingSwitchItem("Biometric Authentication", s.biometricEnabled) {
                         vm.updateSetting(s) { st -> st.copy(biometricEnabled = it) }
                     }
+                    Spacer(Modifier.height(24.dp))
+                }
+
+                // Danger Zone
+                item {
+                    SectionHeader("Danger Zone")
+                    var showClearDialog by remember { mutableStateOf(false) }
+                    SettingButtonItem("Clear All Data", "Delete all transactions, budgets, goals") {
+                        showClearDialog = true
+                    }
+                    if (showClearDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showClearDialog = false },
+                            title = { Text("Clear All Data") },
+                            text = { Text("This will permanently delete all your transactions, budgets, goals, and recurring transactions. Categories and accounts will be kept. This cannot be undone.") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    showClearDialog = false
+                                    vm.clearAllData()
+                                }) {
+                                    Text("Delete Everything", color = MaterialTheme.colorScheme.error)
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showClearDialog = false }) {
+                                    Text("Cancel")
+                                }
+                            }
+                        )
+                    }
                 }
             } ?: run {
                 item {
@@ -137,5 +170,20 @@ private fun SettingSwitchItem(title: String, checked: Boolean, onCheckedChange: 
     ) {
         Text(title, color = TextSecondary, fontSize = 16.sp)
         Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+@Composable
+private fun SettingButtonItem(title: String, subtitle: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.errorContainer
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(title, color = MaterialTheme.colorScheme.error, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Text(subtitle, color = TextSecondary, fontSize = 14.sp)
+        }
     }
 }

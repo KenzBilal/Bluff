@@ -72,6 +72,14 @@ class AddTransactionViewModel(
             _quickSuggestions.value = suggestions
             _monthlySpend.value = suggestions.monthlySpend
         }
+        // Auto-select first account (UPI) when accounts load
+        viewModelScope.launch {
+            getAccountsUseCase.getActive().collect { accounts ->
+                if (_selectedAccountId.value == null && accounts.isNotEmpty()) {
+                    _selectedAccountId.value = accounts.first().id
+                }
+            }
+        }
     }
 
     fun setType(newType: TransactionType) {
@@ -85,11 +93,14 @@ class AddTransactionViewModel(
     fun setCategoryId(id: String) { _selectedCategoryId.value = id }
 
     fun appendAmount(digit: Int) {
-        _amount.value = (_amount.value * 10) + digit
+        // Store in paise (minor units) - user types in rupees
+        _amount.value = (_amount.value * 10) + (digit * 100L)
     }
 
     fun removeAmount() {
-        _amount.value = _amount.value / 10
+        // Remove last digit from rupees, convert back to paise
+        val rupees = _amount.value / 100
+        _amount.value = (rupees / 10) * 100
     }
 
     fun save() {

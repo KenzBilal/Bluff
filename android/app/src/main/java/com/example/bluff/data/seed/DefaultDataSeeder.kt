@@ -24,6 +24,21 @@ class DefaultDataSeeder(
         val accounts = accountRepository.getAllAccounts().first()
         if (accounts.isNotEmpty()) return
 
+        // Seed UPI account (default)
+        val upiId = UUID.randomUUID().toString()
+        accountRepository.addAccount(
+            Account(
+                id = upiId,
+                userId = "",
+                name = "UPI",
+                type = AccountType.BANK, // Using BANK type for UPI
+                icon = "📱",
+                color = "#3A8EFF",
+                initialBalanceMinor = 0L
+            )
+        )
+
+        // Seed Cash account
         accountRepository.addAccount(
             Account(
                 id = UUID.randomUUID().toString(),
