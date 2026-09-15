@@ -12,6 +12,7 @@ data class Category(
     val type: CategoryType,
     val parentId: String? = null,
     val quickAmounts: List<Long> = emptyList(),
+    val children: List<Category> = emptyList(),
     val isSystem: Boolean = false,
     val isArchived: Boolean = false,
     val sortOrder: Int = 0,
