@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.bluff.data.local.dao.*
 import com.example.bluff.data.local.entity.*
 
@@ -21,7 +23,7 @@ import com.example.bluff.data.local.entity.*
         AppSettingsEntity::class,
         SyncQueueEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -37,12 +39,19 @@ abstract class BluffDatabase : RoomDatabase() {
     abstract fun syncQueueDao(): SyncQueueDao
 
     companion object {
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE categories ADD COLUMN parentId TEXT")
+                db.execSQL("ALTER TABLE categories ADD COLUMN quickAmounts TEXT DEFAULT '[]'")
+            }
+        }
+
         fun create(context: Context): BluffDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 BluffDatabase::class.java,
                 "bluff_db"
-            ).build()
+            ).addMigrations(MIGRATION_1_2).build()
         }
     }
 }

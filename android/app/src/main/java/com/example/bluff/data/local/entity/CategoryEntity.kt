@@ -13,6 +13,8 @@ data class CategoryEntity(
     val type: String, // stored as String, converted via TypeConverter
     val icon: String,
     val color: String,
+    val parentId: String? = null,
+    val quickAmounts: String = "[]",
     val isSystem: Boolean = false,
     val isArchived: Boolean = false,
     val sortOrder: Int = 0,
@@ -26,6 +28,11 @@ data class CategoryEntity(
         icon = icon,
         color = color,
         type = CategoryType.valueOf(type),
+        parentId = parentId,
+        quickAmounts = quickAmounts.removeSurrounding("[", "]")
+            .split(",")
+            .filter { it.isNotBlank() }
+            .map { it.trim().toLongOrNull() ?: 0L },
         isSystem = isSystem,
         isArchived = isArchived,
         sortOrder = sortOrder,
@@ -41,6 +48,8 @@ data class CategoryEntity(
             type = model.type.name,
             icon = model.icon,
             color = model.color,
+            parentId = model.parentId,
+            quickAmounts = model.quickAmounts.joinToString(","),
             isSystem = model.isSystem,
             isArchived = model.isArchived,
             sortOrder = model.sortOrder,
