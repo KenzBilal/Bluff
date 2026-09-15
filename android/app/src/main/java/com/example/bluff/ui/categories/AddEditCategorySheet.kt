@@ -81,7 +81,22 @@ fun AddEditCategorySheet(
     var parentId by remember { mutableStateOf(category?.parentId) }
     var parentExpanded by remember { mutableStateOf(false) }
 
-    val rootCategories = allCategories.filter { it.parentId == null }
+    val excludedIds = remember(category) {
+        if (category == null) emptySet()
+        else {
+            val descendants = mutableSetOf<String>()
+            val queue = mutableListOf(category.id)
+            while (queue.isNotEmpty()) {
+                val current = queue.removeFirst()
+                allCategories.filter { it.parentId == current }.forEach {
+                    descendants.add(it.id)
+                    queue.add(it.id)
+                }
+            }
+            descendants + category.id
+        }
+    }
+    val rootCategories = allCategories.filter { it.parentId == null && it.id !in excludedIds }
     val selectedParent = allCategories.find { it.id == parentId }
 
     ModalBottomSheet(
