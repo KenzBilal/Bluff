@@ -2,6 +2,7 @@ package com.example.bluff.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import android.util.Log
 import com.example.bluff.domain.model.Category
 import com.example.bluff.domain.model.CategoryType
 
@@ -32,7 +33,12 @@ data class CategoryEntity(
         quickAmounts = quickAmounts.removeSurrounding("[", "]")
             .split(",")
             .filter { it.isNotBlank() }
-            .map { it.trim().toLongOrNull() ?: 0L },
+            .map {
+                it.trim().toLongOrNull() ?: run {
+                    Log.w("CategoryEntity", "Invalid quickAmount value: '$it', defaulting to 0")
+                    0L
+                }
+            },
         isSystem = isSystem,
         isArchived = isArchived,
         sortOrder = sortOrder,
@@ -49,7 +55,7 @@ data class CategoryEntity(
             icon = model.icon,
             color = model.color,
             parentId = model.parentId,
-            quickAmounts = model.quickAmounts.joinToString(","),
+            quickAmounts = "[${model.quickAmounts.joinToString(",")}]",
             isSystem = model.isSystem,
             isArchived = model.isArchived,
             sortOrder = model.sortOrder,
