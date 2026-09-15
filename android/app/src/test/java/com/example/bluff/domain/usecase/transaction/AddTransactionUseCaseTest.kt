@@ -23,6 +23,7 @@ class AddTransactionUseCaseTest {
             override fun getTransactionsByAccount(accountId: String) = flowOf(emptyList<Transaction>())
             override fun getTransactionsByCategory(categoryId: String) = flowOf(emptyList<Transaction>())
             override fun getTransactionsByDateRange(startDate: LocalDate, endDate: LocalDate) = flowOf(emptyList<Transaction>())
+            override fun getTransactionsByDate(date: LocalDate) = flowOf(emptyList<Transaction>())
             override fun searchTransactions(query: String) = flowOf(emptyList<Transaction>())
             override fun getRecentTransactions() = flowOf(emptyList<Transaction>())
             override suspend fun addTransaction(transaction: Transaction): Result<String> {
