@@ -12,6 +12,7 @@ import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
+import com.example.bluff.domain.usecase.category.QuickSuggestions
 import com.example.bluff.domain.usecase.transaction.AddTransactionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -54,6 +55,24 @@ class AddTransactionViewModel(
 
     private val _saveResult = MutableStateFlow<SaveResult>(SaveResult.Idle)
     val saveResult: StateFlow<SaveResult> = _saveResult.asStateFlow()
+
+    private val _categoryTree = MutableStateFlow<List<Category>>(emptyList())
+    val categoryTree: StateFlow<List<Category>> = _categoryTree.asStateFlow()
+
+    private val _quickSuggestions = MutableStateFlow<QuickSuggestions?>(null)
+    val quickSuggestions: StateFlow<QuickSuggestions?> = _quickSuggestions.asStateFlow()
+
+    private val _monthlySpend = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val monthlySpend: StateFlow<Map<String, Long>> = _monthlySpend.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            _categoryTree.value = getCategoriesUseCase.getCategoryTree()
+            val suggestions = getCategoriesUseCase.getQuickSuggestions()
+            _quickSuggestions.value = suggestions
+            _monthlySpend.value = suggestions.monthlySpend
+        }
+    }
 
     fun setType(newType: TransactionType) {
         _type.value = newType
