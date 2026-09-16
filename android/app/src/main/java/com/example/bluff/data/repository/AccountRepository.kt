@@ -4,12 +4,12 @@ import com.example.bluff.data.local.BluffDatabase
 import com.example.bluff.data.local.entity.AccountEntity
 import com.example.bluff.domain.model.Account
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
 interface AccountRepository {
     fun getAllAccounts(): Flow<List<Account>>
-    fun getActiveAccounts(): Flow<List<Account>>
     fun getAccountById(id: String): Flow<Account?>
     suspend fun addAccount(account: Account): Result<String>
     suspend fun updateAccount(account: Account): Result<Unit>
@@ -22,10 +22,12 @@ class AccountRepositoryImpl(
 ) : AccountRepository {
 
     override fun getAllAccounts(): Flow<List<Account>> =
-        db.accountDao().getAllAccounts().map { entities -> entities.map { it.toModel() } }
-
-    override fun getActiveAccounts(): Flow<List<Account>> =
-        db.accountDao().getActiveAccounts().map { entities -> entities.map { it.toModel() } }
+        db.accountDao().getAllAccounts().map { entities ->
+            entities.map { entity ->
+                val balance = db.accountDao().getAccountBalance(entity.id).first()
+                entity.toModel(currentBalance = balance)
+            }
+        }
 
     override fun getAccountById(id: String): Flow<Account?> =
         db.accountDao().getAccountBalance(id).map { balance ->
