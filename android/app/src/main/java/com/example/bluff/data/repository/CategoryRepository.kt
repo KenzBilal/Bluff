@@ -183,15 +183,8 @@ class CategoryRepositoryImpl(
     }
 
     override suspend fun getMonthlySpendByCategory(): Map<String, Long> {
-        val cal = java.util.Calendar.getInstance()
-        cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
-        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
-        cal.set(java.util.Calendar.MINUTE, 0)
-        cal.set(java.util.Calendar.SECOND, 0)
-        cal.set(java.util.Calendar.MILLISECOND, 0)
-        val startOfMonth = cal.timeInMillis.toString()
-        cal.add(java.util.Calendar.MONTH, 1)
-        val endOfMonth = cal.timeInMillis.toString()
+        val startOfMonth = java.time.LocalDate.now().withDayOfMonth(1).toString()
+        val endOfMonth = java.time.LocalDate.now().withDayOfMonth(1).plusMonths(1).toString()
         return db.categoryDao().getMonthlySpendByCategory(startOfMonth, endOfMonth)
             .associate { it.id to it.total }
     }
