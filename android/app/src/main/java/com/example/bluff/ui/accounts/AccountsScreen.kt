@@ -36,7 +36,7 @@ import com.example.bluff.ui.util.toDisplayAmount
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountsScreen(onBack: () -> Unit) {
+fun AccountsScreen(onBack: () -> Unit, onNavigateToAccountDetail: (String) -> Unit) {
     val vm: AccountsViewModel = viewModel(factory = AccountsViewModel.Factory)
     val accounts by vm.accounts.collectAsStateWithLifecycle(initialValue = emptyList())
     var showAddEdit by remember { mutableStateOf(false) }
@@ -86,7 +86,7 @@ fun AccountsScreen(onBack: () -> Unit) {
                 items(accounts) { account ->
                     AccountCard(
                         account = account,
-                        onClick = { editingAccount = account; showAddEdit = true }
+                        onClick = { onNavigateToAccountDetail(account.id) }
                     )
                     Spacer(Modifier.height(12.dp))
                 }

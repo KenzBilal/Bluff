@@ -52,6 +52,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
 import com.example.bluff.di.AppContainer
+import com.example.bluff.ui.accounts.AccountDetailScreen
 import com.example.bluff.ui.accounts.AccountsScreen
 import com.example.bluff.ui.addtransaction.AddTransactionSheet
 import com.example.bluff.ui.analytics.AnalyticsScreen
@@ -170,7 +171,18 @@ private fun BluffMainApp() {
                         )
                     }
                     entry<AccountsKey> {
-                        AccountsScreen(onBack = { backStack.removeLastOrNull() })
+                        AccountsScreen(
+                            onBack = { backStack.removeLastOrNull() },
+                            onNavigateToAccountDetail = { accountId ->
+                                backStack.add(AccountDetailKey(accountId))
+                            }
+                        )
+                    }
+                    entry<AccountDetailKey> { key ->
+                        AccountDetailScreen(
+                            accountId = key.accountId,
+                            onBack = { backStack.removeLastOrNull() }
+                        )
                     }
                     entry<BudgetsKey> {
                         BudgetScreen(onBack = { backStack.removeLastOrNull() })
