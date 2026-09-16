@@ -30,4 +30,13 @@ interface RecurringTransactionDao {
     
     @Query("DELETE FROM recurring_transactions")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM recurring_transactions WHERE isActive = 1 AND nextRunDate <= :today")
+    suspend fun getDueRecurringTransactions(today: String): List<RecurringTransactionEntity>
+
+    @Query("UPDATE recurring_transactions SET nextRunDate = :nextDate WHERE id = :id")
+    suspend fun advanceNextRunDate(id: String, nextDate: String)
+
+    @Query("UPDATE recurring_transactions SET isActive = 0 WHERE id = :id")
+    suspend fun deactivate(id: String)
 }
