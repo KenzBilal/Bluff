@@ -42,6 +42,7 @@ import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.util.toDisplayAmount
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class GoalsViewModel(
     private val getGoalsUseCase: GetGoalsUseCase,
@@ -62,6 +63,16 @@ class GoalsViewModel(
             color = "#6C63FF"
         )
         upsertGoalUseCase(goal)
+    }
+
+    fun contributeToGoal(goal: Goal, amountMinor: Long) {
+        viewModelScope.launch {
+            val updated = goal.copy(
+                currentAmountMinor = goal.currentAmountMinor + amountMinor,
+                isCompleted = (goal.currentAmountMinor + amountMinor) >= goal.targetAmountMinor
+            )
+            upsertGoalUseCase(updated)
+        }
     }
 
     fun deleteGoal(id: String) {
@@ -91,6 +102,7 @@ fun GoalsScreen(onBack: () -> Unit) {
     val goals by vm.goals.collectAsStateWithLifecycle(initialValue = emptyList())
     var showAddEdit by remember { mutableStateOf(false) }
     var editingGoal by remember { mutableStateOf<Goal?>(null) }
+    var contributingGoal by remember { mutableStateOf<Goal?>(null) }
 
     Scaffold(
         topBar = {
@@ -137,6 +149,7 @@ fun GoalsScreen(onBack: () -> Unit) {
                     GoalCard(
                         goal = goal,
                         onClick = { editingGoal = goal; showAddEdit = true },
+                        onContribute = { contributingGoal = goal },
                         onDelete = { vm.deleteGoal(goal.id) }
                     )
                     Spacer(Modifier.height(12.dp))
@@ -154,10 +167,20 @@ fun GoalsScreen(onBack: () -> Unit) {
             }
         )
     }
+
+    contributingGoal?.let { goal ->
+        GoalContributeSheet(
+            goal = goal,
+            onDismiss = { contributingGoal = null },
+            onContribute = { amount ->
+                vm.contributeToGoal(goal, amount)
+            }
+        )
+    }
 }
 
 @Composable
-private fun GoalCard(goal: Goal, onClick: () -> Unit, onDelete: () -> Unit) {
+private fun GoalCard(goal: Goal, onClick: () -> Unit, onContribute: () -> Unit, onDelete: () -> Unit) {
     val progress = if (goal.targetAmountMinor > 0) {
         goal.currentAmountMinor.toFloat() / goal.targetAmountMinor.toFloat()
     } else 0f
@@ -178,8 +201,34 @@ private fun GoalCard(goal: Goal, onClick: () -> Unit, onDelete: () -> Unit) {
                 Text(goal.icon, fontSize = 24.sp)
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(goal.name, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(goal.name, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                        if (goal.isCompleted) {
+                            Spacer(Modifier.width(8.dp))
+                            Surface(
+                                color = Primary,
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    "Done",
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
                     Text("${goal.currentAmountMinor.toDisplayAmount()} / ${goal.targetAmountMinor.toDisplayAmount()}", color = TextSecondary, fontSize = 14.sp)
+                }
+                if (!goal.isCompleted) {
+                    IconButton(onClick = onContribute) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Contribute",
+                            tint = Primary
+                        )
+                    }
                 }
                 IconButton(onClick = onDelete) {
                     Icon(
@@ -193,12 +242,17 @@ private fun GoalCard(goal: Goal, onClick: () -> Unit, onDelete: () -> Unit) {
             LinearProgressIndicator(
                 progress = { progress.coerceIn(0f, 1f) },
                 modifier = Modifier.fillMaxWidth().height(8.dp),
-                color = parsedColor,
+                color = if (goal.isCompleted) Primary else parsedColor,
                 trackColor = CardColor,
             )
             if (goal.targetDate != null) {
                 Spacer(Modifier.height(8.dp))
-                Text("Target: ${goal.targetDate}", color = TextSecondary, fontSize = 12.sp)
+                val formattedDate = try {
+                    goal.targetDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+                } catch (e: Exception) {
+                    goal.targetDate.toString()
+                }
+                Text("Target: $formattedDate", color = TextSecondary, fontSize = 12.sp)
             }
         }
     }
