@@ -23,7 +23,7 @@ import com.example.bluff.data.local.entity.*
         AppSettingsEntity::class,
         DebtEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -73,12 +73,18 @@ abstract class BluffDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE transactions ADD COLUMN goalId TEXT")
+            }
+        }
+
         fun create(context: Context): BluffDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 BluffDatabase::class.java,
                 "bluff_db"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
         }
     }
 }

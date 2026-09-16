@@ -19,6 +19,7 @@ data class TransactionEntity(
     val note: String? = null,
     val transactionDate: String,    // stored as "yyyy-MM-dd" via TypeConverter
     val recurringId: String? = null,
+    val goalId: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
@@ -34,6 +35,7 @@ data class TransactionEntity(
         note = note,
         transactionDate = LocalDate.parse(transactionDate),
         recurringId = recurringId,
+        goalId = goalId,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -51,6 +53,7 @@ data class TransactionEntity(
             note = model.note,
             transactionDate = model.transactionDate.toString(),
             recurringId = model.recurringId,
+            goalId = model.goalId,
             createdAt = model.createdAt,
             updatedAt = model.updatedAt
         )

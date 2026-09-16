@@ -20,6 +20,7 @@ data class Transaction(
     val transactionDate: LocalDate,
     val recurringId: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
+    val goalId: String? = null,
     val updatedAt: Long = System.currentTimeMillis(),
     // Denormalized for display (populated by repository joins)
     val accountName: String = "",
