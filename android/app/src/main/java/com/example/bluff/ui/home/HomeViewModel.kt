@@ -7,10 +7,12 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.Budget
+import com.example.bluff.domain.model.Goal
 import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
+import com.example.bluff.domain.usecase.goal.GetGoalsUseCase
 import com.example.bluff.domain.usecase.transaction.GetTransactionsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +27,8 @@ import java.time.temporal.TemporalAdjusters
 class HomeViewModel(
     private val getTransactionsUseCase: GetTransactionsUseCase,
     private val getAccountsUseCase: GetAccountsUseCase,
-    private val getBudgetsUseCase: GetBudgetsUseCase
+    private val getBudgetsUseCase: GetBudgetsUseCase,
+    private val getGoalsUseCase: GetGoalsUseCase
 ) : ViewModel() {
 
     private val now = LocalDate.now()
@@ -53,6 +56,10 @@ class HomeViewModel(
     val activeBudget: StateFlow<Budget?> = getBudgetsUseCase.getOverallBudget()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    val topGoals: StateFlow<List<Goal>> = getGoalsUseCase.getAll()
+        .map { goals -> goals.filter { !it.isCompleted }.take(3) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         updateGreeting()
     }
@@ -73,7 +80,8 @@ class HomeViewModel(
                 HomeViewModel(
                     container.getTransactionsUseCase,
                     container.getAccountsUseCase,
-                    container.getBudgetsUseCase
+                    container.getBudgetsUseCase,
+                    container.getGoalsUseCase
                 )
             }
         }

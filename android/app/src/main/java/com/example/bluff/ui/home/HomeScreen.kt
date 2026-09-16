@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.Budget
+import com.example.bluff.domain.model.Goal
 import com.example.bluff.theme.*
 import com.example.bluff.ui.components.*
 import com.example.bluff.ui.util.toDisplayAmount
@@ -40,6 +41,7 @@ fun HomeScreen(
     val spent by viewModel.monthlySpent.collectAsState()
     val recentTransactions by viewModel.recentTransactions.collectAsState()
     val activeBudget by viewModel.activeBudget.collectAsState()
+    val topGoals by viewModel.topGoals.collectAsState()
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
@@ -188,6 +190,19 @@ fun HomeScreen(
                 }
             }
         }
+
+        // ── Goals ────────────────────────────────────────────────────────
+        if (topGoals.isNotEmpty()) {
+            item {
+                BluffSectionHeader(
+                    title = "Goals",
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+            items(topGoals) { goal ->
+                GoalRow(goal = goal, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+            }
+        }
     }
 }
 
@@ -293,6 +308,69 @@ private fun EnhancedBudgetCard(budget: Budget, spent: Long) {
                         .background(
                             Brush.horizontalGradient(
                                 listOf(progressColor.copy(alpha = 0.7f), progressColor)
+                            )
+                        )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GoalRow(goal: Goal, modifier: Modifier = Modifier) {
+    val progress = (goal.progressPercent / 100f).coerceIn(0f, 1f)
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "goalProgress"
+    )
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = CardColor,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = goal.name,
+                    color = TextPrimary,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = goal.progressPercent.toInt().toString() + "%",
+                    color = IncomeColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "${goal.currentAmountMinor.toDisplayAmount()} of ${goal.targetAmountMinor.toDisplayAmount()}",
+                color = TextSecondary,
+                fontSize = 12.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(DividerColor)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(animatedProgress)
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(50.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(IncomeColor.copy(alpha = 0.7f), IncomeColor)
                             )
                         )
                 )
