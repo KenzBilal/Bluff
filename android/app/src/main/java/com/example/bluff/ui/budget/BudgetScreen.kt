@@ -40,7 +40,6 @@ import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.categories.CategoriesViewModel
 import com.example.bluff.ui.util.toDisplayAmount
 import kotlinx.coroutines.launch
-import java.time.DayOfWeek
 import java.time.LocalDate
 
 class BudgetViewModel(
