@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable data object HomeKey : NavKey
 @Serializable data object CalendarKey : NavKey
-@Serializable data object TransactionsKey : NavKey
 @Serializable data object AnalyticsKey : NavKey
 @Serializable data object MoreKey : NavKey
 @Serializable data object DebtKey : NavKey

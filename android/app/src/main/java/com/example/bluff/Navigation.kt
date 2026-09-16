@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -67,7 +66,6 @@ import com.example.bluff.ui.more.MoreScreen
 import com.example.bluff.ui.onboarding.OnboardingScreen
 import com.example.bluff.ui.recurring.RecurringScreen
 import com.example.bluff.ui.settings.SettingsScreen
-import com.example.bluff.ui.transactions.TransactionsScreen
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
@@ -90,7 +88,7 @@ private fun BluffMainApp() {
     var showAddTransaction by remember { mutableStateOf(false) }
 
     val currentKey = backStack.lastOrNull()
-    val isBottomNavVisible = currentKey in setOf(HomeKey, CalendarKey, TransactionsKey, AnalyticsKey, DebtKey, MoreKey)
+    val isBottomNavVisible = currentKey in setOf(HomeKey, CalendarKey, DebtKey, AnalyticsKey, MoreKey)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -159,11 +157,8 @@ private fun BluffMainApp() {
                             onBack = { backStack.removeLastOrNull() }
                         )
                     }
-                    entry<TransactionsKey> { TransactionsScreen() }
                     entry<AnalyticsKey> { AnalyticsScreen() }
-                    entry<DebtKey> {
-                        DebtScreen(onBack = { backStack.removeLastOrNull() })
-                    }
+                    entry<DebtKey> { DebtScreen() }
                     entry<MoreKey> {
                         MoreScreen(
                             onNavigateToAccounts = { backStack.add(AccountsKey) },
@@ -171,8 +166,7 @@ private fun BluffMainApp() {
                             onNavigateToGoals = { backStack.add(GoalsKey) },
                             onNavigateToCategories = { backStack.add(CategoriesKey) },
                             onNavigateToRecurring = { backStack.add(RecurringKey) },
-                            onNavigateToSettings = { backStack.add(SettingsKey) },
-                            onNavigateToDebt = { backStack.add(DebtKey) }
+                            onNavigateToSettings = { backStack.add(SettingsKey) }
                         )
                     }
                     entry<AccountsKey> {
@@ -218,7 +212,7 @@ private data class BottomNavItem(
 private val bottomNavItems = listOf(
     BottomNavItem(HomeKey, "Home", Icons.Default.Home),
     BottomNavItem(CalendarKey, "Calendar", Icons.Default.CalendarMonth),
-    BottomNavItem(TransactionsKey, "Ledger", Icons.Default.List),
+    BottomNavItem(DebtKey, "Debt", Icons.Default.AccountBalance),
     BottomNavItem(AnalyticsKey, "Analytics", Icons.Default.Analytics),
     BottomNavItem(MoreKey, "More", Icons.Default.MoreHoriz)
 )

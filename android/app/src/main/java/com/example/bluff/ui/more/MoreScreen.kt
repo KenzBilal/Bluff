@@ -27,8 +27,7 @@ fun MoreScreen(
     onNavigateToGoals: () -> Unit,
     onNavigateToCategories: () -> Unit,
     onNavigateToRecurring: () -> Unit,
-    onNavigateToSettings: () -> Unit,
-    onNavigateToDebt: () -> Unit
+    onNavigateToSettings: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -51,8 +50,6 @@ fun MoreScreen(
         item {
             Column(Modifier.padding(horizontal = 20.dp)) {
                 MoreItem("Accounts", Icons.Default.AccountBalanceWallet, onNavigateToAccounts)
-                Spacer(Modifier.height(12.dp))
-                MoreItem("Debt", Icons.Default.AccountBalance, onNavigateToDebt)
                 Spacer(Modifier.height(12.dp))
                 MoreItem("Budgets", Icons.Default.PieChart, onNavigateToBudgets)
                 Spacer(Modifier.height(12.dp))
