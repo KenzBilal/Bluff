@@ -15,8 +15,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "SUPABASE_URL", "\"https://kxakwbczyecjxouecijt.supabase.co\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4YWt3YmN6eWVjanhvdWVjaWp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzOTUyMjQsImV4cCI6MjEwNDk3MTIyNH0.Nos7fC-e4D7ebfExD0HQgrpSpYP9vXWN16Hq58Z6yfY\"")
     }
 
     buildTypes {
@@ -84,18 +82,6 @@ dependencies {
 
     // DataStore
     implementation(libs.datastore.preferences)
-
-    // WorkManager
-    implementation(libs.work.runtime.ktx)
-
-    // Supabase
-    val supabaseBom = platform(libs.supabase.bom)
-    implementation(supabaseBom)
-    implementation(libs.supabase.postgrest)
-    implementation(libs.supabase.realtime)
-
-    // Ktor engine for Supabase
-    implementation(libs.ktor.client.okhttp)
 
     // Vico Charts
     implementation(libs.vico.compose)

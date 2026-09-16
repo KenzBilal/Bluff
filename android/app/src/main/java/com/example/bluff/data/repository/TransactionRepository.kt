@@ -1,15 +1,10 @@
 package com.example.bluff.data.repository
 
 import com.example.bluff.data.local.BluffDatabase
-import com.example.bluff.data.local.entity.SyncQueueEntity
 import com.example.bluff.data.local.entity.TransactionEntity
-import com.example.bluff.data.remote.dto.TransactionDto
 import com.example.bluff.domain.model.Transaction
-import io.github.jan.supabase.SupabaseClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
@@ -28,7 +23,6 @@ interface TransactionRepository {
 
 class TransactionRepositoryImpl(
     private val db: BluffDatabase,
-    private val supabase: SupabaseClient,
     private val userIdProvider: () -> String
 ) : TransactionRepository {
 
@@ -62,7 +56,6 @@ class TransactionRepositoryImpl(
             val userId = userIdProvider()
             val entity = TransactionEntity.fromModel(transaction.copy(id = id, userId = userId))
             db.transactionDao().insertTransaction(entity)
-            queueSync("INSERT", "transactions", id, TransactionDto.fromEntity(entity))
             Result.success(id)
         } catch (e: Exception) {
             Result.failure(e)
@@ -73,7 +66,6 @@ class TransactionRepositoryImpl(
         return try {
             val entity = TransactionEntity.fromModel(transaction)
             db.transactionDao().updateTransaction(entity)
-            queueSync("UPDATE", "transactions", transaction.id, TransactionDto.fromEntity(entity))
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -83,22 +75,9 @@ class TransactionRepositoryImpl(
     override suspend fun deleteTransaction(id: String): Result<Unit> {
         return try {
             db.transactionDao().deleteTransaction(id)
-            queueSync("DELETE", "transactions", id, null)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-
-    private suspend fun queueSync(op: String, table: String, id: String, payload: TransactionDto?) {
-        db.syncQueueDao().insertOperation(
-            SyncQueueEntity(
-                operationType = op,
-                tableName = table,
-                entityId = id,
-                payload = payload?.let { Json.encodeToString(it) },
-                createdAt = System.currentTimeMillis()
-            )
-        )
     }
 }

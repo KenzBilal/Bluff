@@ -2,16 +2,11 @@ package com.example.bluff.data.repository
 
 import com.example.bluff.data.local.BluffDatabase
 import com.example.bluff.data.local.entity.CategoryEntity
-import com.example.bluff.data.local.entity.SyncQueueEntity
 import com.example.bluff.domain.model.Category
 import com.example.bluff.domain.model.CategoryType
-import com.example.bluff.data.remote.dto.CategoryDto
-import io.github.jan.supabase.SupabaseClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.UUID
 
 interface CategoryRepository {
@@ -30,7 +25,6 @@ interface CategoryRepository {
 
 class CategoryRepositoryImpl(
     private val db: BluffDatabase,
-    private val supabase: SupabaseClient,
     private val userIdProvider: () -> String
 ) : CategoryRepository {
 
@@ -55,7 +49,6 @@ class CategoryRepositoryImpl(
             val userId = userIdProvider()
             val entity = CategoryEntity.fromModel(category.copy(id = id, userId = userId))
             db.categoryDao().insertCategory(entity)
-            queueSync("INSERT", "categories", id, CategoryDto.fromEntity(entity, userId))
             Result.success(id)
         } catch (e: Exception) {
             Result.failure(e)
@@ -66,7 +59,6 @@ class CategoryRepositoryImpl(
         return try {
             val entity = CategoryEntity.fromModel(category)
             db.categoryDao().updateCategory(entity)
-            queueSync("UPDATE", "categories", category.id, CategoryDto.fromEntity(entity, category.userId))
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -206,17 +198,5 @@ class CategoryRepositoryImpl(
 
     override suspend fun getChildrenOf(parentId: String): List<Category> {
         return db.categoryDao().getChildrenOf(parentId).map { it.toModel() }
-    }
-
-    private suspend fun queueSync(op: String, table: String, id: String, payload: CategoryDto?) {
-        db.syncQueueDao().insertOperation(
-            SyncQueueEntity(
-                operationType = op,
-                tableName = table,
-                entityId = id,
-                payload = payload?.let { Json.encodeToString(it) },
-                createdAt = System.currentTimeMillis()
-            )
-        )
     }
 }

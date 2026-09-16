@@ -1,10 +1,8 @@
 package com.example.bluff.di
 
 import android.content.Context
-import com.example.bluff.BuildConfig
 import com.example.bluff.data.local.BluffDatabase
 import com.example.bluff.data.preferences.UserPreferencesManager
-import com.example.bluff.data.remote.SupabaseProvider
 import com.example.bluff.data.repository.AccountRepositoryImpl
 import com.example.bluff.data.repository.AppSettingsRepositoryImpl
 import com.example.bluff.data.repository.BudgetRepositoryImpl
@@ -48,21 +46,17 @@ class AppContainer(context: Context) {
 
     // --- Infrastructure ---
     private val database = BluffDatabase.create(context)
-    private val supabaseClient = SupabaseProvider.createClient(
-        url = BuildConfig.SUPABASE_URL,
-        key = BuildConfig.SUPABASE_ANON_KEY
-    )
     val userPreferencesManager = UserPreferencesManager(context)
     private fun getUserId() = userPreferencesManager.getUserIdBlocking()
 
     // --- Repositories ---
-    val accountRepository = AccountRepositoryImpl(database, supabaseClient) { getUserId() }
-    val categoryRepository = CategoryRepositoryImpl(database, supabaseClient) { getUserId() }
-    val transactionRepository = TransactionRepositoryImpl(database, supabaseClient) { getUserId() }
-    val budgetRepository = BudgetRepositoryImpl(database, supabaseClient) { getUserId() }
-    val goalRepository = GoalRepositoryImpl(database, supabaseClient) { getUserId() }
-    val recurringTransactionRepository = RecurringTransactionRepositoryImpl(database, supabaseClient) { getUserId() }
-    val appSettingsRepository = AppSettingsRepositoryImpl(database, supabaseClient) { getUserId() }
+    val accountRepository = AccountRepositoryImpl(database) { getUserId() }
+    val categoryRepository = CategoryRepositoryImpl(database) { getUserId() }
+    val transactionRepository = TransactionRepositoryImpl(database) { getUserId() }
+    val budgetRepository = BudgetRepositoryImpl(database) { getUserId() }
+    val goalRepository = GoalRepositoryImpl(database) { getUserId() }
+    val recurringTransactionRepository = RecurringTransactionRepositoryImpl(database) { getUserId() }
+    val appSettingsRepository = AppSettingsRepositoryImpl(database) { getUserId() }
     val debtRepository = DebtRepositoryImpl(database) { getUserId() }
 
     // --- Use Cases ---

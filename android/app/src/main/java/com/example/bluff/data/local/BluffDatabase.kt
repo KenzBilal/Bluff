@@ -21,10 +21,9 @@ import com.example.bluff.data.local.entity.*
         TagEntity::class,
         TransactionTagEntity::class,
         AppSettingsEntity::class,
-        SyncQueueEntity::class,
         DebtEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -37,7 +36,6 @@ abstract class BluffDatabase : RoomDatabase() {
     abstract fun recurringTransactionDao(): RecurringTransactionDao
     abstract fun tagDao(): TagDao
     abstract fun appSettingsDao(): AppSettingsDao
-    abstract fun syncQueueDao(): SyncQueueDao
     abstract fun debtDao(): DebtDao
 
     companion object {
@@ -69,12 +67,18 @@ abstract class BluffDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS sync_queue")
+            }
+        }
+
         fun create(context: Context): BluffDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 BluffDatabase::class.java,
                 "bluff_db"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
         }
     }
 }

@@ -3,7 +3,6 @@ package com.example.bluff.data.repository
 import com.example.bluff.data.local.BluffDatabase
 import com.example.bluff.data.local.entity.AppSettingsEntity
 import com.example.bluff.domain.model.AppSettings
-import io.github.jan.supabase.SupabaseClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -14,7 +13,6 @@ interface AppSettingsRepository {
 
 class AppSettingsRepositoryImpl(
     private val db: BluffDatabase,
-    private val supabase: SupabaseClient,
     private val userIdProvider: () -> String
 ) : AppSettingsRepository {
 
