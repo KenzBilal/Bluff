@@ -59,9 +59,9 @@ fun GoalContributeSheet(
             BluffButton(
                 text = "Contribute",
                 onClick = {
-                    val amount = amountText.toLongOrNull() ?: 0L
-                    if (amount > 0) {
-                        onContribute(amount)
+                    val displayAmount = amountText.toLongOrNull() ?: 0L
+                    if (displayAmount > 0) {
+                        onContribute(displayAmount * 100L)
                         onDismiss()
                     }
                 }
