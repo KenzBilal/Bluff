@@ -26,6 +26,8 @@ import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.theme.*
 import com.example.bluff.ui.util.toDisplayAmount
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -179,7 +181,7 @@ private fun AccountTransactionItem(transaction: Transaction) {
                     )
                 }
                 Text(
-                    text = transaction.transactionDate.toString(),
+                    text = transaction.transactionDate.format(DateTimeFormatter.ofPattern("dd MMM", Locale.getDefault())),
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
