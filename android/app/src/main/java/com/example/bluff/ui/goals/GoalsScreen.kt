@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -162,7 +163,7 @@ private fun GoalCard(goal: Goal, onClick: () -> Unit, onDelete: () -> Unit) {
     } else 0f
 
     val parsedColor = try {
-        Color(android.graphics.Color.parseColor(goal.color))
+        Color(goal.color.toColorInt())
     } catch (e: Exception) {
         Primary
     }

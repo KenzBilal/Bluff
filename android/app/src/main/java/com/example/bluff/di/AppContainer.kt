@@ -9,6 +9,7 @@ import com.example.bluff.data.repository.AccountRepositoryImpl
 import com.example.bluff.data.repository.AppSettingsRepositoryImpl
 import com.example.bluff.data.repository.BudgetRepositoryImpl
 import com.example.bluff.data.repository.CategoryRepositoryImpl
+import com.example.bluff.data.repository.DebtRepositoryImpl
 import com.example.bluff.data.repository.GoalRepositoryImpl
 import com.example.bluff.data.repository.RecurringTransactionRepositoryImpl
 import com.example.bluff.data.repository.TransactionRepositoryImpl
@@ -17,6 +18,10 @@ import com.example.bluff.domain.usecase.account.DeleteAccountUseCase
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.account.UpdateAccountUseCase
 import com.example.bluff.domain.usecase.analytics.GetAnalyticsUseCase
+import com.example.bluff.domain.usecase.debt.AddDebtUseCase
+import com.example.bluff.domain.usecase.debt.DeleteDebtUseCase
+import com.example.bluff.domain.usecase.debt.GetDebtsUseCase
+import com.example.bluff.domain.usecase.debt.MarkDebtPaidUseCase
 import com.example.bluff.domain.usecase.budget.DeleteBudgetUseCase
 import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
 import com.example.bluff.domain.usecase.budget.UpsertBudgetUseCase
@@ -58,6 +63,7 @@ class AppContainer(context: Context) {
     val goalRepository = GoalRepositoryImpl(database, supabaseClient) { getUserId() }
     val recurringTransactionRepository = RecurringTransactionRepositoryImpl(database, supabaseClient) { getUserId() }
     val appSettingsRepository = AppSettingsRepositoryImpl(database, supabaseClient) { getUserId() }
+    val debtRepository = DebtRepositoryImpl(database) { getUserId() }
 
     // --- Use Cases ---
     val getTransactionsUseCase = GetTransactionsUseCase(transactionRepository)
@@ -86,6 +92,11 @@ class AppContainer(context: Context) {
     val deleteRecurringTransactionUseCase = DeleteRecurringTransactionUseCase(recurringTransactionRepository)
 
     val getAnalyticsUseCase = GetAnalyticsUseCase(transactionRepository)
+
+    val addDebtUseCase = AddDebtUseCase(debtRepository)
+    val getDebtsUseCase = GetDebtsUseCase(debtRepository)
+    val deleteDebtUseCase = DeleteDebtUseCase(debtRepository)
+    val markDebtPaidUseCase = MarkDebtPaidUseCase(debtRepository)
 
     val getAppSettingsUseCase = GetAppSettingsUseCase(appSettingsRepository)
     val updateAppSettingsUseCase = UpdateAppSettingsUseCase(appSettingsRepository)

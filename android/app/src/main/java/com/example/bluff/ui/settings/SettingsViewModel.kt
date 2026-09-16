@@ -10,13 +10,18 @@ import com.example.bluff.domain.model.AppSettings
 import com.example.bluff.domain.usecase.settings.GetAppSettingsUseCase
 import com.example.bluff.domain.usecase.settings.UpdateAppSettingsUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val getSettingsUseCase: GetAppSettingsUseCase,
     private val updateSettingsUseCase: UpdateAppSettingsUseCase
 ) : ViewModel() {
-    val settings = getSettingsUseCase()
+
+    val settings: StateFlow<AppSettings?> = getSettingsUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun updateSetting(current: AppSettings, updater: (AppSettings) -> AppSettings) {
         viewModelScope.launch(Dispatchers.IO) {

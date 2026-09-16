@@ -7,21 +7,28 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,6 +40,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import com.example.bluff.theme.Background
+import com.example.bluff.theme.DividerColor
+import com.example.bluff.theme.Primary
+import com.example.bluff.theme.Surface
+import com.example.bluff.theme.TextSecondary
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -47,6 +61,7 @@ import com.example.bluff.ui.calendar.CalendarScreen
 import com.example.bluff.ui.calendar.DayDetailScreen
 import com.example.bluff.ui.categories.CategoriesScreen
 import com.example.bluff.ui.goals.GoalsScreen
+import com.example.bluff.ui.debt.DebtScreen
 import com.example.bluff.ui.home.HomeScreen
 import com.example.bluff.ui.more.MoreScreen
 import com.example.bluff.ui.onboarding.OnboardingScreen
@@ -75,7 +90,7 @@ private fun BluffMainApp() {
     var showAddTransaction by remember { mutableStateOf(false) }
 
     val currentKey = backStack.lastOrNull()
-    val isBottomNavVisible = currentKey in setOf(HomeKey, CalendarKey, TransactionsKey, AnalyticsKey, MoreKey)
+    val isBottomNavVisible = currentKey in setOf(HomeKey, CalendarKey, TransactionsKey, AnalyticsKey, DebtKey, MoreKey)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -107,9 +122,19 @@ private fun BluffMainApp() {
             if (isBottomNavVisible) {
                 FloatingActionButton(
                     onClick = { showAddTransaction = true },
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = Primary,
+                    contentColor = androidx.compose.ui.graphics.Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(
+                        defaultElevation = 8.dp,
+                        pressedElevation = 4.dp
+                    ),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add transaction")
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Add transaction",
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
             }
         }
@@ -118,7 +143,7 @@ private fun BluffMainApp() {
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
-                modifier = Modifier.padding(innerPadding),
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
                 entryProvider = entryProvider {
                     entry<HomeKey> { HomeScreen(onNavigateToTransactionDetail = {}) }
                     entry<CalendarKey> {
@@ -136,6 +161,9 @@ private fun BluffMainApp() {
                     }
                     entry<TransactionsKey> { TransactionsScreen() }
                     entry<AnalyticsKey> { AnalyticsScreen() }
+                    entry<DebtKey> {
+                        DebtScreen(onBack = { backStack.removeLastOrNull() })
+                    }
                     entry<MoreKey> {
                         MoreScreen(
                             onNavigateToAccounts = { backStack.add(AccountsKey) },
@@ -143,7 +171,8 @@ private fun BluffMainApp() {
                             onNavigateToGoals = { backStack.add(GoalsKey) },
                             onNavigateToCategories = { backStack.add(CategoriesKey) },
                             onNavigateToRecurring = { backStack.add(RecurringKey) },
-                            onNavigateToSettings = { backStack.add(SettingsKey) }
+                            onNavigateToSettings = { backStack.add(SettingsKey) },
+                            onNavigateToDebt = { backStack.add(DebtKey) }
                         )
                     }
                     entry<AccountsKey> {
@@ -200,15 +229,36 @@ private fun BluffBottomNavBar(
     onNavigate: (NavKey) -> Unit
 ) {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp
+        containerColor = Surface,
+        tonalElevation = 0.dp,
+        modifier = Modifier.height(80.dp)
     ) {
         bottomNavItems.forEach { item ->
+            val selected = currentKey == item.key
             NavigationBarItem(
-                selected = currentKey == item.key,
+                selected = selected,
                 onClick = { onNavigate(item.key) },
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label) }
+                icon = {
+                    Icon(
+                        item.icon,
+                        contentDescription = item.label,
+                        modifier = Modifier.size(22.dp)
+                    )
+                },
+                label = {
+                    Text(
+                        text = item.label,
+                        fontSize = 10.sp,
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Primary,
+                    selectedTextColor = Primary,
+                    unselectedIconColor = TextSecondary,
+                    unselectedTextColor = TextSecondary,
+                    indicatorColor = Primary.copy(alpha = 0.15f)
+                )
             )
         }
     }

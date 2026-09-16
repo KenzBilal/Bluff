@@ -8,11 +8,14 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.Account
 import com.example.bluff.domain.model.Category
+import com.example.bluff.domain.model.Debt
+import com.example.bluff.domain.model.DebtDirection
 import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
 import com.example.bluff.domain.usecase.category.QuickSuggestions
+import com.example.bluff.domain.usecase.debt.AddDebtUseCase
 import com.example.bluff.domain.usecase.transaction.AddTransactionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,18 +25,28 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+/** The mode of the add-transaction sheet. Debt replaces Income. */
+enum class EntryMode { EXPENSE, DEBT, TRANSFER }
+
 class AddTransactionViewModel(
     private val addTransactionUseCase: AddTransactionUseCase,
     private val getAccountsUseCase: GetAccountsUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val addDebtUseCase: AddDebtUseCase
 ) : ViewModel() {
+
+    // ── Amount ──────────────────────────────────────────────────────────────
+    private val _amountText = MutableStateFlow("")
+    val amountText: StateFlow<String> = _amountText.asStateFlow()
 
     private val _amount = MutableStateFlow(0L)
     val amount: StateFlow<Long> = _amount.asStateFlow()
 
-    private val _type = MutableStateFlow(TransactionType.EXPENSE)
-    val type: StateFlow<TransactionType> = _type.asStateFlow()
+    // ── Entry mode ──────────────────────────────────────────────────────────
+    private val _mode = MutableStateFlow(EntryMode.EXPENSE)
+    val mode: StateFlow<EntryMode> = _mode.asStateFlow()
 
+    // ── Transfer / Expense fields ────────────────────────────────────────────
     private val _note = MutableStateFlow("")
     val note: StateFlow<String> = _note.asStateFlow()
 
@@ -46,11 +59,28 @@ class AddTransactionViewModel(
     private val _selectedCategoryId = MutableStateFlow<String?>(null)
     val selectedCategoryId: StateFlow<String?> = _selectedCategoryId.asStateFlow()
 
+    // ── Transfer: optional contact (person you transferred to) ───────────────
+    private val _transferContactName = MutableStateFlow("")
+    val transferContactName: StateFlow<String> = _transferContactName.asStateFlow()
+
+    private val _transferContactPhone = MutableStateFlow("")
+    val transferContactPhone: StateFlow<String> = _transferContactPhone.asStateFlow()
+
+    // ── Debt fields ─────────────────────────────────────────────────────────
+    private val _debtDirection = MutableStateFlow(DebtDirection.THEY_OWE)
+    val debtDirection: StateFlow<DebtDirection> = _debtDirection.asStateFlow()
+
+    private val _debtContactName = MutableStateFlow("")
+    val debtContactName: StateFlow<String> = _debtContactName.asStateFlow()
+
+    private val _debtContactPhone = MutableStateFlow("")
+    val debtContactPhone: StateFlow<String> = _debtContactPhone.asStateFlow()
+
+    // ── Repos ────────────────────────────────────────────────────────────────
     val accounts: StateFlow<List<Account>> = getAccountsUseCase.getActive()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val expenseCategories: StateFlow<List<Category>> = getCategoriesUseCase.getExpenseCategories()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val incomeCategories: StateFlow<List<Category>> = getCategoriesUseCase.getIncomeCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _saveResult = MutableStateFlow<SaveResult>(SaveResult.Idle)
@@ -72,7 +102,6 @@ class AddTransactionViewModel(
             _quickSuggestions.value = suggestions
             _monthlySpend.value = suggestions.monthlySpend
         }
-        // Auto-select first account (UPI) when accounts load
         viewModelScope.launch {
             getAccountsUseCase.getActive().collect { accounts ->
                 if (_selectedAccountId.value == null && accounts.isNotEmpty()) {
@@ -82,8 +111,8 @@ class AddTransactionViewModel(
         }
     }
 
-    fun setType(newType: TransactionType) {
-        _type.value = newType
+    fun setMode(newMode: EntryMode) {
+        _mode.value = newMode
         _selectedCategoryId.value = null
     }
 
@@ -91,82 +120,136 @@ class AddTransactionViewModel(
     fun setAccountId(id: String) { _selectedAccountId.value = id }
     fun setToAccountId(id: String) { _selectedToAccountId.value = id }
     fun setCategoryId(id: String) { _selectedCategoryId.value = id }
-
-    fun appendAmount(digit: Int) {
-        // Store in paise (minor units) - user types in rupees
-        _amount.value = (_amount.value * 10) + (digit * 100L)
+    fun setDebtDirection(dir: DebtDirection) { _debtDirection.value = dir }
+    fun setDebtContact(name: String, phone: String) {
+        _debtContactName.value = name
+        _debtContactPhone.value = phone
+    }
+    fun setTransferContact(name: String, phone: String) {
+        _transferContactName.value = name
+        _transferContactPhone.value = phone
     }
 
-    fun removeAmount() {
-        // Remove last digit from rupees, convert back to paise
-        val rupees = _amount.value / 100
-        _amount.value = (rupees / 10) * 100
+    fun setAmountText(text: String) {
+        val digits = text.filter { it.isDigit() }
+        _amountText.value = digits
+        _amount.value = digits.toLongOrNull()?.times(100L) ?: 0L
     }
 
     fun save() {
         val currentAmount = _amount.value
-        val currentType = _type.value
         val accountId = _selectedAccountId.value
-        val categoryId = _selectedCategoryId.value
-        val toAccountId = _selectedToAccountId.value
+        val currentMode = _mode.value
 
         if (currentAmount <= 0) {
             _saveResult.value = SaveResult.Error("Amount must be greater than zero")
             return
         }
+
+        when (currentMode) {
+            EntryMode.DEBT -> saveDebt(currentAmount)
+            EntryMode.EXPENSE -> saveExpense(currentAmount, accountId)
+            EntryMode.TRANSFER -> saveTransfer(currentAmount, accountId)
+        }
+    }
+
+    private fun saveDebt(amount: Long) {
+        val contactName = _debtContactName.value.trim()
+        if (contactName.isBlank()) {
+            _saveResult.value = SaveResult.Error("Select a contact")
+            return
+        }
+        viewModelScope.launch {
+            val debt = Debt(
+                id = "",
+                userId = "",
+                amountMinor = amount,
+                direction = _debtDirection.value,
+                contactName = contactName,
+                contactPhone = _debtContactPhone.value.ifBlank { null },
+                note = _note.value.ifBlank { null }
+            )
+            addDebtUseCase(debt).fold(
+                onSuccess = { _saveResult.value = SaveResult.Success; resetForm() },
+                onFailure = { e -> _saveResult.value = SaveResult.Error(e.message ?: "Failed to save") }
+            )
+        }
+    }
+
+    private fun saveExpense(amount: Long, accountId: String?) {
+        val categoryId = _selectedCategoryId.value
         if (accountId.isNullOrBlank()) {
             _saveResult.value = SaveResult.Error("Select an account")
             return
         }
-        if (currentType != TransactionType.TRANSFER && categoryId.isNullOrBlank()) {
+        if (categoryId.isNullOrBlank()) {
             _saveResult.value = SaveResult.Error("Select a category")
             return
         }
-        if (currentType == TransactionType.TRANSFER && toAccountId.isNullOrBlank()) {
-            _saveResult.value = SaveResult.Error("Select destination account")
-            return
-        }
-        if (currentType == TransactionType.TRANSFER && accountId == toAccountId) {
-            _saveResult.value = SaveResult.Error("Source and destination must differ")
-            return
-        }
-
         viewModelScope.launch {
             val transaction = Transaction(
-                id = "",
-                userId = "",
-                amountMinor = currentAmount,
-                type = currentType,
+                id = "", userId = "",
+                amountMinor = amount,
+                type = TransactionType.EXPENSE,
                 accountId = accountId,
-                toAccountId = if (currentType == TransactionType.TRANSFER) toAccountId else null,
-                categoryId = if (currentType != TransactionType.TRANSFER) categoryId else null,
+                categoryId = categoryId,
                 note = _note.value.ifBlank { null },
                 transactionDate = LocalDate.now()
             )
-            val result = addTransactionUseCase(transaction)
-            result.fold(
-                onSuccess = {
-                    _saveResult.value = SaveResult.Success
-                    resetForm()
-                },
-                onFailure = { e ->
-                    _saveResult.value = SaveResult.Error(e.message ?: "Failed to save")
-                }
+            addTransactionUseCase(transaction).fold(
+                onSuccess = { _saveResult.value = SaveResult.Success; resetForm() },
+                onFailure = { e -> _saveResult.value = SaveResult.Error(e.message ?: "Failed to save") }
+            )
+        }
+    }
+
+    private fun saveTransfer(amount: Long, accountId: String?) {
+        val toAccountId = _selectedToAccountId.value
+        if (accountId.isNullOrBlank()) {
+            _saveResult.value = SaveResult.Error("Select source account")
+            return
+        }
+        if (toAccountId.isNullOrBlank()) {
+            _saveResult.value = SaveResult.Error("Select destination account")
+            return
+        }
+        if (accountId == toAccountId) {
+            _saveResult.value = SaveResult.Error("Source and destination must differ")
+            return
+        }
+        val contactNote = _transferContactName.value.trim()
+            .let { if (it.isNotBlank()) "To: $it. " else "" }
+        viewModelScope.launch {
+            val transaction = Transaction(
+                id = "", userId = "",
+                amountMinor = amount,
+                type = TransactionType.TRANSFER,
+                accountId = accountId,
+                toAccountId = toAccountId,
+                note = contactNote + _note.value.ifBlank { "" }.trim(),
+                transactionDate = LocalDate.now()
+            )
+            addTransactionUseCase(transaction).fold(
+                onSuccess = { _saveResult.value = SaveResult.Success; resetForm() },
+                onFailure = { e -> _saveResult.value = SaveResult.Error(e.message ?: "Failed to save") }
             )
         }
     }
 
     fun resetForm() {
+        _amountText.value = ""
         _amount.value = 0L
-        _type.value = TransactionType.EXPENSE
+        _mode.value = EntryMode.EXPENSE
         _note.value = ""
         _selectedCategoryId.value = null
-        // Keep account selection
+        _debtContactName.value = ""
+        _debtContactPhone.value = ""
+        _transferContactName.value = ""
+        _transferContactPhone.value = ""
+        _debtDirection.value = DebtDirection.THEY_OWE
     }
 
-    fun consumeSaveResult() {
-        _saveResult.value = SaveResult.Idle
-    }
+    fun consumeSaveResult() { _saveResult.value = SaveResult.Idle }
 
     sealed class SaveResult {
         data object Idle : SaveResult()
@@ -181,7 +264,8 @@ class AddTransactionViewModel(
                 AddTransactionViewModel(
                     container.addTransactionUseCase,
                     container.getAccountsUseCase,
-                    container.getCategoriesUseCase
+                    container.getCategoriesUseCase,
+                    container.addDebtUseCase
                 )
             }
         }

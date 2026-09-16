@@ -27,6 +27,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bluff.domain.model.Category
@@ -87,7 +89,7 @@ fun AddEditCategorySheet(
             val descendants = mutableSetOf<String>()
             val queue = mutableListOf(category.id)
             while (queue.isNotEmpty()) {
-                val current = queue.removeFirst()
+                val current = queue.removeAt(0)
                 allCategories.filter { it.parentId == current }.forEach {
                     descendants.add(it.id)
                     queue.add(it.id)
@@ -149,7 +151,15 @@ fun AddEditCategorySheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        focusedContainerColor = CardColor,
+                        unfocusedContainerColor = com.example.bluff.theme.SurfaceVariant,
+                        focusedBorderColor = Primary,
+                        unfocusedBorderColor = com.example.bluff.theme.DividerColor,
+                        cursorColor = Primary
+                    )
                 )
                 ExposedDropdownMenu(
                     expanded = parentExpanded,
@@ -209,7 +219,7 @@ fun AddEditCategorySheet(
             ) {
                 defaultColors.forEach { hex ->
                     val parsedColor = try {
-                        Color(android.graphics.Color.parseColor(hex))
+                        Color(hex.toColorInt())
                     } catch (e: Exception) {
                         Primary
                     }

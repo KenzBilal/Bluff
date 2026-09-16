@@ -21,9 +21,10 @@ import com.example.bluff.data.local.entity.*
         TagEntity::class,
         TransactionTagEntity::class,
         AppSettingsEntity::class,
-        SyncQueueEntity::class
+        SyncQueueEntity::class,
+        DebtEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -37,6 +38,7 @@ abstract class BluffDatabase : RoomDatabase() {
     abstract fun tagDao(): TagDao
     abstract fun appSettingsDao(): AppSettingsDao
     abstract fun syncQueueDao(): SyncQueueDao
+    abstract fun debtDao(): DebtDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -46,12 +48,34 @@ abstract class BluffDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS debts (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        userId TEXT NOT NULL,
+                        amountMinor INTEGER NOT NULL,
+                        direction TEXT NOT NULL,
+                        contactName TEXT NOT NULL,
+                        contactPhone TEXT,
+                        note TEXT,
+                        isPaid INTEGER NOT NULL DEFAULT 0,
+                        createdAt INTEGER NOT NULL,
+                        paidAt INTEGER
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun create(context: Context): BluffDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 BluffDatabase::class.java,
                 "bluff_db"
-            ).addMigrations(MIGRATION_1_2).build()
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
         }
     }
 }
+

@@ -2,6 +2,7 @@ package com.example.bluff.ui.settings
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -19,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.AppSettings
 import com.example.bluff.theme.Background
+import com.example.bluff.theme.ExpenseColor
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 
@@ -114,19 +116,20 @@ fun SettingsScreen(onBack: () -> Unit) {
                     if (showClearDialog) {
                         AlertDialog(
                             onDismissRequest = { showClearDialog = false },
-                            title = { Text("Clear All Data") },
-                            text = { Text("This will permanently delete all your transactions, budgets, goals, and recurring transactions. Categories and accounts will be kept. This cannot be undone.") },
+                            containerColor = com.example.bluff.theme.CardColor,
+                            title = { Text("Clear All Data", color = TextPrimary) },
+                            text = { Text("This will permanently delete all your transactions, budgets, goals, and recurring transactions. Categories and accounts will be kept. This cannot be undone.", color = TextSecondary) },
                             confirmButton = {
                                 TextButton(onClick = {
                                     showClearDialog = false
                                     vm.clearAllData()
                                 }) {
-                                    Text("Delete Everything", color = MaterialTheme.colorScheme.error)
+                                    Text("Delete Everything", color = ExpenseColor)
                                 }
                             },
                             dismissButton = {
                                 TextButton(onClick = { showClearDialog = false }) {
-                                    Text("Cancel")
+                                    Text("Cancel", color = TextSecondary)
                                 }
                             }
                         )
@@ -134,9 +137,17 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             } ?: run {
                 item {
-                    Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+                    val defaultSettings = AppSettings(userId = "")
+                    SectionHeader("Personal")
+                    SettingTextItem("Name", defaultSettings.userName.ifBlank { "Not set" })
+                    SettingTextItem("Currency", "${defaultSettings.currencySymbol} (${defaultSettings.currencyCode})")
+                    SettingTextItem("Financial Month Start", "Day ${defaultSettings.financialMonthStartDay}")
+                    Spacer(Modifier.height(24.dp))
+
+                    SectionHeader("Appearance")
+                    SettingTextItem("Accent Color", defaultSettings.accentColor)
+                    SettingTextItem("Layout Density", defaultSettings.layoutDensity)
+                    SettingTextItem("Animation Intensity", defaultSettings.animationIntensity)
                 }
             }
         }
@@ -178,11 +189,11 @@ private fun SettingButtonItem(title: String, subtitle: String, onClick: () -> Un
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.errorContainer
+        shape = RoundedCornerShape(16.dp),
+        color = ExpenseColor.copy(alpha = 0.1f)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, color = MaterialTheme.colorScheme.error, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Text(title, color = ExpenseColor, fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Text(subtitle, color = TextSecondary, fontSize = 14.sp)
         }
     }

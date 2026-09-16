@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable data object TransactionsKey : NavKey
 @Serializable data object AnalyticsKey : NavKey
 @Serializable data object MoreKey : NavKey
+@Serializable data object DebtKey : NavKey
 @Serializable data object AccountsKey : NavKey
 @Serializable data object BudgetsKey : NavKey
 @Serializable data object GoalsKey : NavKey

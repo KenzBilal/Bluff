@@ -44,9 +44,10 @@ fun CategoryTreePicker(
     categories: List<Category>,
     selectedCategoryId: String?,
     onCategorySelected: (Category) -> Unit,
+    modifier: Modifier = Modifier,
     quickSuggestions: QuickSuggestions? = null,
     monthlySpend: Map<String, Long> = emptyMap(),
-    modifier: Modifier = Modifier
+    onQuickAmountSelected: ((Category, Long) -> Unit)? = null
 ) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         if (quickSuggestions != null && quickSuggestions.categories.isNotEmpty()) {
@@ -55,7 +56,8 @@ fun CategoryTreePicker(
                 QuickCategoryChip(
                     category = category,
                     monthlySpend = monthlySpend[category.id] ?: 0L,
-                    onClick = { onCategorySelected(category) }
+                    onClick = { onCategorySelected(category) },
+                    onAmountClick = { amount -> onQuickAmountSelected?.invoke(category, amount) }
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -157,7 +159,8 @@ private fun CategoryExpandableRow(
 private fun QuickCategoryChip(
     category: Category,
     monthlySpend: Long,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onAmountClick: (Long) -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -187,7 +190,7 @@ private fun QuickCategoryChip(
                 Surface(
                     modifier = Modifier
                         .padding(start = 4.dp)
-                        .clickable { onClick() },
+                        .clickable { onAmountClick(amount) },
                     shape = RoundedCornerShape(8.dp),
                     color = SurfaceVariant
                 ) {

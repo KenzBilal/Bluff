@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -131,7 +132,7 @@ private fun CategoryCard(
     onClick: () -> Unit
 ) {
     val parsedColor = try {
-        Color(android.graphics.Color.parseColor(category.color))
+        Color(category.color.toColorInt())
     } catch (e: Exception) {
         Primary
     }
