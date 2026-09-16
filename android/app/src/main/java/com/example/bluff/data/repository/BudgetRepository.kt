@@ -5,6 +5,7 @@ import com.example.bluff.data.local.entity.BudgetEntity
 import com.example.bluff.domain.model.Budget
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 interface BudgetRepository {
@@ -20,12 +21,34 @@ class BudgetRepositoryImpl(
     private val userIdProvider: () -> String
 ) : BudgetRepository {
 
+    private val transactionDao = db.transactionDao()
+
     override fun getAllBudgets(): Flow<List<Budget>> =
-        db.budgetDao().getAllBudgets().map { it.map { e -> e.toModel() } }
+        db.budgetDao().getAllBudgets().map { entities ->
+            entities.map { e ->
+                val budget = e.toModel()
+                val spent = transactionDao.getSpendingInRange(
+                    budget.startDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    budget.endDate?.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                        ?: budget.startDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    budget.categoryId
+                )
+                budget.copy(spentMinor = spent)
+            }
+        }
 
     override fun getActiveBudgets(): Flow<List<Budget>> =
         db.budgetDao().getAllBudgets().map { entities ->
-            entities.filter { it.isActive }.map { it.toModel() }
+            entities.filter { it.isActive }.map { e ->
+                val budget = e.toModel()
+                val spent = transactionDao.getSpendingInRange(
+                    budget.startDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    budget.endDate?.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                        ?: budget.startDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    budget.categoryId
+                )
+                budget.copy(spentMinor = spent)
+            }
         }
 
     override fun getOverallBudget(): Flow<Budget?> =

@@ -40,6 +40,7 @@ import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.categories.CategoriesViewModel
 import com.example.bluff.ui.util.toDisplayAmount
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 class BudgetViewModel(
@@ -53,6 +54,17 @@ class BudgetViewModel(
     fun saveBudget(name: String, amount: Long, period: BudgetPeriod, categoryId: String?, existingId: String? = null) {
         viewModelScope.launch {
             val now = LocalDate.now()
+            val (start, end) = when (period) {
+                BudgetPeriod.WEEKLY -> {
+                    now.with(java.time.DayOfWeek.MONDAY) to now.with(java.time.DayOfWeek.SUNDAY)
+                }
+                BudgetPeriod.MONTHLY -> {
+                    now.withDayOfMonth(1) to now.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth())
+                }
+                BudgetPeriod.YEARLY -> {
+                    now.withDayOfYear(1) to now.with(java.time.temporal.TemporalAdjusters.lastDayOfYear())
+                }
+            }
             val budget = Budget(
                 id = existingId ?: "",
                 userId = "",
@@ -60,8 +72,8 @@ class BudgetViewModel(
                 amountMinor = amount,
                 period = period,
                 categoryId = categoryId,
-                startDate = now.withDayOfMonth(1),
-                endDate = now.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth())
+                startDate = start,
+                endDate = end
             )
             upsertBudgetUseCase(budget)
         }
@@ -94,6 +106,8 @@ fun BudgetScreen(onBack: () -> Unit) {
     val budgets by vm.budgets.collectAsStateWithLifecycle(initialValue = emptyList())
     var showAddEdit by remember { mutableStateOf(false) }
     var editingBudget by remember { mutableStateOf<Budget?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var deletingBudget by remember { mutableStateOf<Budget?>(null) }
 
     // Load categories for the sheet
     val categoriesViewModel: CategoriesViewModel = viewModel(factory = CategoriesViewModel.Factory)
@@ -143,7 +157,8 @@ fun BudgetScreen(onBack: () -> Unit) {
                 items(budgets) { budget ->
                     BudgetCard(
                         budget = budget,
-                        onClick = { editingBudget = budget; showAddEdit = true }
+                        onClick = { editingBudget = budget; showAddEdit = true },
+                        onDelete = { deletingBudget = budget; showDeleteDialog = true }
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -161,17 +176,48 @@ fun BudgetScreen(onBack: () -> Unit) {
             }
         )
     }
+
+    if (showDeleteDialog && deletingBudget != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Budget") },
+            text = { Text("Are you sure you want to delete \"${deletingBudget!!.name}\"? This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.deleteBudget(deletingBudget!!.id)
+                    showDeleteDialog = false
+                    deletingBudget = null
+                }) {
+                    Text("Delete", color = androidx.compose.ui.graphics.Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false; deletingBudget = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
-private fun BudgetCard(budget: Budget, onClick: () -> Unit) {
+private fun BudgetCard(budget: Budget, onClick: () -> Unit, onDelete: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = CardColor,
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(budget.name, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(budget.name, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                TextButton(onClick = onDelete, contentPadding = PaddingValues(0.dp)) {
+                    Text("Delete", color = androidx.compose.ui.graphics.Color.Red, fontSize = 12.sp)
+                }
+            }
             Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),

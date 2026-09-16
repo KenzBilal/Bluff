@@ -61,4 +61,14 @@ interface TransactionDao {
 
     @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'EXPENSE' AND transactionDate >= :startDate AND transactionDate <= :endDate")
     fun getSpendingForPeriod(startDate: String, endDate: String): Flow<Long>
+
+    @Query("""
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE type = 'EXPENSE'
+        AND transactionDate >= :startDate
+        AND transactionDate <= :endDate
+        AND (:categoryId IS NULL OR categoryId = :categoryId)
+    """)
+    suspend fun getSpendingInRange(startDate: String, endDate: String, categoryId: String?): Long
 }
