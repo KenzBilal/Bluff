@@ -1,7 +1,9 @@
 package com.example.bluff.ui.accounts
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,6 +43,8 @@ fun AccountsScreen(onBack: () -> Unit, onNavigateToAccountDetail: (String) -> Un
     val accounts by vm.accounts.collectAsStateWithLifecycle(initialValue = emptyList())
     var showAddEdit by remember { mutableStateOf(false) }
     var editingAccount by remember { mutableStateOf<Account?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var accountToDelete by remember { mutableStateOf<Account?>(null) }
 
     Scaffold(
         topBar = {
@@ -86,12 +90,44 @@ fun AccountsScreen(onBack: () -> Unit, onNavigateToAccountDetail: (String) -> Un
                 items(accounts) { account ->
                     AccountCard(
                         account = account,
-                        onClick = { onNavigateToAccountDetail(account.id) }
+                        onClick = { onNavigateToAccountDetail(account.id) },
+                        onLongClick = {
+                            accountToDelete = account
+                            showDeleteDialog = true
+                        }
                     )
                     Spacer(Modifier.height(12.dp))
                 }
             }
         }
+    }
+
+    if (showDeleteDialog && accountToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+                accountToDelete = null
+            },
+            title = { Text("Delete Account") },
+            text = { Text("Are you sure you want to delete \"${accountToDelete!!.name}\"? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.archiveAccount(accountToDelete!!.id)
+                    showDeleteDialog = false
+                    accountToDelete = null
+                }) {
+                    Text("Delete", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    accountToDelete = null
+                }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     if (showAddEdit) {
@@ -105,8 +141,9 @@ fun AccountsScreen(onBack: () -> Unit, onNavigateToAccountDetail: (String) -> Un
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-private fun AccountCard(account: Account, onClick: () -> Unit) {
+private fun AccountCard(account: Account, onClick: () -> Unit, onLongClick: (() -> Unit)? = null) {
     val parsedColor = try {
         Color(account.color.toColorInt())
     } catch (e: Exception) {
@@ -116,7 +153,12 @@ private fun AccountCard(account: Account, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = CardColor,
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
