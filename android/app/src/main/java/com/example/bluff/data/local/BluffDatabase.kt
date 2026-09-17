@@ -99,7 +99,7 @@ abstract class BluffDatabase : RoomDatabase() {
                         updatedAt INTEGER NOT NULL
                     )
                 """)
-                db.execSQL("CREATE UNIQUE INDEX idx_expense_cycles_category ON expense_cycles(categoryId) WHERE isActive = 1")
+                db.execSQL("CREATE UNIQUE INDEX index_expense_cycles_categoryId ON expense_cycles(categoryId)")
                 db.execSQL("""
                     CREATE TABLE category_cycle_defaults (
                         categoryId TEXT PRIMARY KEY NOT NULL,
