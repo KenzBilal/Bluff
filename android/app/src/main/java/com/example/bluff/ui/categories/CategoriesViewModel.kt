@@ -9,6 +9,7 @@ import com.example.bluff.di.AppContainer
 import com.example.bluff.domain.model.Category
 import com.example.bluff.domain.model.CategoryType
 import com.example.bluff.domain.usecase.category.AddCategoryUseCase
+import com.example.bluff.domain.usecase.category.DeleteCategoryUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 
 class CategoriesViewModel(
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val addCategoryUseCase: AddCategoryUseCase
+    private val addCategoryUseCase: AddCategoryUseCase,
+    private val deleteCategoryUseCase: DeleteCategoryUseCase
 ) : ViewModel() {
     val categories = getCategoriesUseCase.getAll()
 
@@ -57,13 +59,21 @@ class CategoriesViewModel(
         }
     }
 
+    fun deleteCategory(categoryId: String) {
+        viewModelScope.launch {
+            deleteCategoryUseCase(categoryId)
+            loadCategoryTree()
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = AppContainer.instance
                 CategoriesViewModel(
                     container.getCategoriesUseCase,
-                    container.addCategoryUseCase
+                    container.addCategoryUseCase,
+                    container.deleteCategoryUseCase
                 )
             }
         }
