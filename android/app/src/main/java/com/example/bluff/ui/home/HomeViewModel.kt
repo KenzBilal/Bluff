@@ -13,6 +13,8 @@ import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
 import com.example.bluff.domain.usecase.goal.GetGoalsUseCase
+import com.example.bluff.domain.model.ExpenseCycle
+import com.example.bluff.domain.usecase.cycle.GetCyclesUseCase
 import com.example.bluff.domain.usecase.transaction.GetTransactionsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +30,8 @@ class HomeViewModel(
     private val getTransactionsUseCase: GetTransactionsUseCase,
     private val getAccountsUseCase: GetAccountsUseCase,
     private val getBudgetsUseCase: GetBudgetsUseCase,
-    private val getGoalsUseCase: GetGoalsUseCase
+    private val getGoalsUseCase: GetGoalsUseCase,
+    private val getCyclesUseCase: GetCyclesUseCase
 ) : ViewModel() {
 
     private val now = LocalDate.now()
@@ -60,6 +63,14 @@ class HomeViewModel(
         .map { goals -> goals.filter { !it.isCompleted }.take(3) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val upcomingCycles: StateFlow<List<ExpenseCycle>> = getCyclesUseCase()
+        .map { cycles ->
+            cycles
+                .sortedBy { it.nextDueDate }
+                .take(5)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         updateGreeting()
     }
@@ -81,7 +92,8 @@ class HomeViewModel(
                     container.getTransactionsUseCase,
                     container.getAccountsUseCase,
                     container.getBudgetsUseCase,
-                    container.getGoalsUseCase
+                    container.getGoalsUseCase,
+                    container.getCyclesUseCase
                 )
             }
         }

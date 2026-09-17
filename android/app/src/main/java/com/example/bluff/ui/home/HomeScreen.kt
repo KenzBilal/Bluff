@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.Budget
+import com.example.bluff.domain.model.ExpenseCycle
 import com.example.bluff.domain.model.Goal
 import com.example.bluff.theme.*
 import com.example.bluff.ui.components.*
@@ -42,6 +43,7 @@ fun HomeScreen(
     val recentTransactions by viewModel.recentTransactions.collectAsState()
     val activeBudget by viewModel.activeBudget.collectAsState()
     val topGoals by viewModel.topGoals.collectAsState()
+    val upcomingCycles by viewModel.upcomingCycles.collectAsState()
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
@@ -132,6 +134,20 @@ fun HomeScreen(
                     }
                 }
             }
+        }
+
+        // ── Upcoming Cycles ──────────────────────────────────────────────
+        if (upcomingCycles.isNotEmpty()) {
+            item {
+                BluffSectionHeader(
+                    title = "Upcoming",
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+            items(upcomingCycles) { cycle ->
+                UpcomingCycleRow(cycle)
+            }
+            item { Spacer(Modifier.height(16.dp)) }
         }
 
         // ── Recent Transactions ────────────────────────────────────────────
@@ -376,5 +392,41 @@ private fun GoalRow(goal: Goal, modifier: Modifier = Modifier) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun UpcomingCycleRow(cycle: ExpenseCycle) {
+    val statusColor = when {
+        cycle.isOverdue -> ExpenseColor
+        cycle.isDueSoon -> Color(0xFFFF9800)
+        else -> IncomeColor
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(Primary.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("🔄", fontSize = 16.sp)
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(cycle.name, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        }
+        Text(
+            cycle.statusText,
+            color = statusColor,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
