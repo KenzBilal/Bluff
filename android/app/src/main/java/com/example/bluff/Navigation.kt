@@ -60,6 +60,7 @@ import com.example.bluff.ui.budget.BudgetScreen
 import com.example.bluff.ui.calendar.CalendarScreen
 import com.example.bluff.ui.calendar.DayDetailScreen
 import com.example.bluff.ui.categories.CategoriesScreen
+import com.example.bluff.ui.cycles.CyclesScreen
 import com.example.bluff.ui.goals.GoalsScreen
 import com.example.bluff.ui.debt.DebtScreen
 import com.example.bluff.ui.home.HomeScreen
@@ -167,6 +168,7 @@ private fun BluffMainApp() {
                             onNavigateToGoals = { backStack.add(GoalsKey) },
                             onNavigateToCategories = { backStack.add(CategoriesKey) },
                             onNavigateToRecurring = { backStack.add(RecurringKey) },
+                            onNavigateToCycles = { backStack.add(CyclesKey) },
                             onNavigateToSettings = { backStack.add(SettingsKey) }
                         )
                     }
@@ -192,6 +194,9 @@ private fun BluffMainApp() {
                     }
                     entry<CategoriesKey> {
                         CategoriesScreen(onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<CyclesKey> {
+                        CyclesScreen(onBack = { backStack.removeLastOrNull() })
                     }
                     entry<RecurringKey> {
                         RecurringScreen(onBack = { backStack.removeLastOrNull() })

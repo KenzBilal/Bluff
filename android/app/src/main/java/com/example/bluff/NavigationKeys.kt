@@ -17,4 +17,5 @@ import kotlinx.serialization.Serializable
 @Serializable data class TransactionDetailKey(val transactionId: String) : NavKey
 @Serializable data class DayDetailKey(val date: String) : NavKey
 @Serializable data class AccountDetailKey(val accountId: String) : NavKey
+@Serializable data object CyclesKey : NavKey
 @Serializable data object OnboardingKey : NavKey

@@ -27,6 +27,7 @@ fun MoreScreen(
     onNavigateToGoals: () -> Unit,
     onNavigateToCategories: () -> Unit,
     onNavigateToRecurring: () -> Unit,
+    onNavigateToCycles: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     LazyColumn(
@@ -58,6 +59,8 @@ fun MoreScreen(
                 MoreItem("Categories", Icons.Default.Category, onNavigateToCategories)
                 Spacer(Modifier.height(12.dp))
                 MoreItem("Recurring", Icons.Default.Repeat, onNavigateToRecurring)
+                Spacer(Modifier.height(12.dp))
+                MoreItem("Cycles", Icons.Default.Cached, onNavigateToCycles)
                 Spacer(Modifier.height(12.dp))
                 MoreItem("Settings", Icons.Default.Settings, onNavigateToSettings)
             }
