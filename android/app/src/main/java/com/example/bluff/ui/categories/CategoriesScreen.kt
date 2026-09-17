@@ -161,7 +161,7 @@ fun CategoriesScreen(onBack: () -> Unit) {
                 vm.saveCategory(name, type, icon, color, editingCategory?.id, parentId, iconType)
             },
             onDelete = {
-                vm.deleteCategory(editingCategory?.id ?: return@AddEditCategorySheet)
+                editingCategory?.id?.let { id -> vm.deleteCategory(id) }
             }
         )
     }
