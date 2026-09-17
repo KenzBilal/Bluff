@@ -16,6 +16,7 @@ interface CategoryRepository {
     fun getIncomeCategories(): Flow<List<Category>>
     suspend fun addCategory(category: Category): Result<String>
     suspend fun updateCategory(category: Category): Result<Unit>
+    suspend fun deleteCategory(id: String): Result<Unit>
     suspend fun seedDefaultCategoriesIfNeeded()
     suspend fun getCategoryTree(): List<Category>
     suspend fun getRecentCategories(limit: Int = 10): List<Category>
@@ -59,6 +60,15 @@ class CategoryRepositoryImpl(
         return try {
             val entity = CategoryEntity.fromModel(category)
             db.categoryDao().updateCategory(entity)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteCategory(id: String): Result<Unit> {
+        return try {
+            db.categoryDao().deleteCategory(id)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

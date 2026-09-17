@@ -26,6 +26,7 @@ import com.example.bluff.domain.usecase.budget.DeleteBudgetUseCase
 import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
 import com.example.bluff.domain.usecase.budget.UpsertBudgetUseCase
 import com.example.bluff.domain.usecase.category.AddCategoryUseCase
+import com.example.bluff.domain.usecase.category.DeleteCategoryUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
 import com.example.bluff.domain.usecase.cycle.AddCycleUseCase
 import com.example.bluff.domain.usecase.cycle.DeactivateCycleUseCase
@@ -79,6 +80,7 @@ class AppContainer(context: Context) {
 
     val getCategoriesUseCase = GetCategoriesUseCase(categoryRepository)
     val addCategoryUseCase = AddCategoryUseCase(categoryRepository)
+    val deleteCategoryUseCase = DeleteCategoryUseCase(categoryRepository)
 
     val getBudgetsUseCase = GetBudgetsUseCase(budgetRepository)
     val upsertBudgetUseCase = UpsertBudgetUseCase(budgetRepository)
