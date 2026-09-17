@@ -15,6 +15,7 @@ import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
 import com.example.bluff.domain.usecase.category.QuickSuggestions
+import com.example.bluff.domain.usecase.cycle.AddCycleUseCase
 import com.example.bluff.domain.usecase.debt.AddDebtUseCase
 import com.example.bluff.domain.usecase.transaction.AddTransactionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +33,8 @@ class AddTransactionViewModel(
     private val addTransactionUseCase: AddTransactionUseCase,
     private val getAccountsUseCase: GetAccountsUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val addDebtUseCase: AddDebtUseCase
+    private val addDebtUseCase: AddDebtUseCase,
+    private val addCycleUseCase: AddCycleUseCase
 ) : ViewModel() {
 
     // ── Amount ──────────────────────────────────────────────────────────────
@@ -75,6 +77,10 @@ class AddTransactionViewModel(
 
     private val _debtContactPhone = MutableStateFlow("")
     val debtContactPhone: StateFlow<String> = _debtContactPhone.asStateFlow()
+
+    // ── Cycle default ─────────────────────────────────────────────────────
+    private val _defaultCycleDays = MutableStateFlow<Int?>(null)
+    val defaultCycleDays: StateFlow<Int?> = _defaultCycleDays.asStateFlow()
 
     // ── Repos ────────────────────────────────────────────────────────────────
     val accounts: StateFlow<List<Account>> = getAccountsUseCase.getActive()
@@ -119,7 +125,19 @@ class AddTransactionViewModel(
     fun setNote(newNote: String) { _note.value = newNote }
     fun setAccountId(id: String) { _selectedAccountId.value = id }
     fun setToAccountId(id: String) { _selectedToAccountId.value = id }
-    fun setCategoryId(id: String) { _selectedCategoryId.value = id }
+    fun setCategoryId(id: String) {
+        _selectedCategoryId.value = id
+        viewModelScope.launch {
+            val default = AppContainer.instance.expenseCycleRepository.getDefaultForCategory(id)
+            _defaultCycleDays.value = default?.defaultCycleDays
+        }
+    }
+
+    fun createCycle(categoryId: String, name: String, amountMinor: Long, cycleDays: Int) {
+        viewModelScope.launch {
+            addCycleUseCase(categoryId, name, amountMinor, cycleDays)
+        }
+    }
     fun setDebtDirection(dir: DebtDirection) { _debtDirection.value = dir }
     fun setDebtContact(name: String, phone: String) {
         _debtContactName.value = name
@@ -265,7 +283,8 @@ class AddTransactionViewModel(
                     container.addTransactionUseCase,
                     container.getAccountsUseCase,
                     container.getCategoriesUseCase,
-                    container.addDebtUseCase
+                    container.addDebtUseCase,
+                    container.addCycleUseCase
                 )
             }
         }

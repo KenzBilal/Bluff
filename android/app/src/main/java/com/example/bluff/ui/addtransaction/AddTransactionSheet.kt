@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.DebtDirection
 import com.example.bluff.theme.*
 import com.example.bluff.ui.components.*
+import com.example.bluff.ui.cycles.CycleSetupSheet
 import com.example.bluff.ui.util.toDisplayAmount
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,11 +55,20 @@ fun AddTransactionSheet(
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showDebtContactPicker by remember { mutableStateOf(false) }
     var showTransferContactPicker by remember { mutableStateOf(false) }
+    var showCycleSetup by remember { mutableStateOf(false) }
+    var savedCategoryId by remember { mutableStateOf<String?>(null) }
+    var savedAmount by remember { mutableStateOf(0L) }
+    var savedCategoryName by remember { mutableStateOf("") }
+    val defaultCycleDays by viewModel.defaultCycleDays.collectAsState()
 
     LaunchedEffect(saveResult) {
         when (val result = saveResult) {
             is AddTransactionViewModel.SaveResult.Success -> {
-                onDismiss()
+                if (mode == EntryMode.EXPENSE && savedCategoryId != null) {
+                    showCycleSetup = true
+                } else {
+                    onDismiss()
+                }
                 viewModel.consumeSaveResult()
             }
             is AddTransactionViewModel.SaveResult.Error -> {
@@ -426,7 +436,15 @@ fun AddTransactionSheet(
                 )
             },
             confirmButton = {
-                TextButton(onClick = { showConfirmDialog = false; viewModel.save() }) {
+                TextButton(onClick = {
+                    savedCategoryId = selectedCategoryId
+                    savedAmount = amount
+                    savedCategoryName = categoryTree.flatMap { root ->
+                        listOf(root) + root.children.flatMap { l1 -> listOf(l1) + l1.children }
+                    }.find { it.id == selectedCategoryId }?.name ?: ""
+                    showConfirmDialog = false
+                    viewModel.save()
+                }) {
                     Text("Save", color = Primary, fontWeight = FontWeight.Bold)
                 }
             },
@@ -434,6 +452,23 @@ fun AddTransactionSheet(
                 TextButton(onClick = { showConfirmDialog = false }) {
                     Text("Cancel", color = TextSecondary)
                 }
+            }
+        )
+    }
+
+    // ── Cycle setup sheet ──────────────────────────────────────────────────
+    if (showCycleSetup) {
+        CycleSetupSheet(
+            categoryName = savedCategoryName,
+            defaultCycleDays = defaultCycleDays,
+            onConfirm = { days ->
+                viewModel.createCycle(savedCategoryId!!, savedCategoryName, savedAmount, days)
+                showCycleSetup = false
+                onDismiss()
+            },
+            onDismiss = {
+                showCycleSetup = false
+                onDismiss()
             }
         )
     }
