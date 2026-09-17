@@ -19,6 +19,7 @@ data class CategoryEntity(
     val isSystem: Boolean = false,
     val isArchived: Boolean = false,
     val sortOrder: Int = 0,
+    val iconType: String = "emoji",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
@@ -42,6 +43,7 @@ data class CategoryEntity(
         isSystem = isSystem,
         isArchived = isArchived,
         sortOrder = sortOrder,
+        iconType = iconType,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -59,6 +61,7 @@ data class CategoryEntity(
             isSystem = model.isSystem,
             isArchived = model.isArchived,
             sortOrder = model.sortOrder,
+            iconType = model.iconType,
             createdAt = model.createdAt,
             updatedAt = model.updatedAt
         )

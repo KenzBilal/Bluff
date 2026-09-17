@@ -16,6 +16,7 @@ data class Category(
     val isSystem: Boolean = false,
     val isArchived: Boolean = false,
     val sortOrder: Int = 0,
+    val iconType: String = "emoji",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
