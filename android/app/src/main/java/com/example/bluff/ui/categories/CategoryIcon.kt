@@ -66,6 +66,9 @@ private val materialIconMap: Map<String, ImageVector> = mapOf(
     "egg_alt" to Icons.Rounded.EggAlt,
     "kebab_dining" to Icons.Rounded.KebabDining,
     "brunch_dining" to Icons.Rounded.BrunchDining,
+    "popcorn" to Icons.Rounded.Fastfood,
+    "wb_sunny" to Icons.Rounded.WbSunny,
+    "dark_mode" to Icons.Rounded.DarkMode,
     // Home
     "home" to Icons.Rounded.Home,
     "apartment" to Icons.Rounded.Apartment,
@@ -130,7 +133,12 @@ private val materialIconMap: Map<String, ImageVector> = mapOf(
     "child_care" to Icons.Rounded.ChildCare,
     "elderly" to Icons.Rounded.Elderly,
     "groups" to Icons.Rounded.Groups,
-    "volunteer_activism" to Icons.Rounded.VolunteerActivism
+    "volunteer_activism" to Icons.Rounded.VolunteerActivism,
+    "menu_book" to Icons.Rounded.MenuBook,
+    "lightbulb" to Icons.Rounded.Lightbulb,
+    "bolt" to Icons.Rounded.Bolt,
+    "language" to Icons.Rounded.Language,
+    "inventory_2" to Icons.Rounded.Inventory2
 )
 
 @Composable

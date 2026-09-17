@@ -27,6 +27,7 @@ import androidx.core.graphics.toColorInt
 import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.theme.CardColor
+import com.example.bluff.ui.categories.CategoryIcon
 import com.example.bluff.theme.DividerColor
 import com.example.bluff.theme.ExpenseColor
 import com.example.bluff.theme.IncomeColor
@@ -80,18 +81,14 @@ fun TransactionRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icon bubble with category color
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(iconBgColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = transaction.categoryIcon ?: "💸",
-                    fontSize = 20.sp
-                )
-            }
+            CategoryIcon(
+                icon = transaction.categoryIcon ?: "💸",
+                iconType = transaction.categoryIconType,
+                color = transaction.categoryColor ?: "#6C63FF",
+                backgroundSize = 44.dp,
+                iconSize = 22.dp,
+                fontSize = 20.sp
+            )
 
             Spacer(modifier = Modifier.width(14.dp))
 

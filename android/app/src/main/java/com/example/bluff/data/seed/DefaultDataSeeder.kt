@@ -32,7 +32,7 @@ class DefaultDataSeeder(
                 userId = "",
                 name = "UPI",
                 type = AccountType.BANK, // Using BANK type for UPI
-                icon = "📱",
+                icon = "phone_iphone",
                 color = "#3A8EFF",
                 initialBalanceMinor = 0L
             )
@@ -45,7 +45,7 @@ class DefaultDataSeeder(
                 userId = "",
                 name = "Cash",
                 type = AccountType.CASH,
-                icon = "💵",
+                icon = "payments",
                 color = "#00C896",
                 initialBalanceMinor = 0L
             )

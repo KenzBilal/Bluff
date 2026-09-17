@@ -27,9 +27,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.bluff.domain.model.Category
 import com.example.bluff.domain.usecase.category.QuickSuggestions
 import com.example.bluff.theme.CardColor
+import com.example.bluff.ui.categories.CategoryIcon
 import com.example.bluff.theme.ExpenseColor
 import com.example.bluff.theme.Primary
 import com.example.bluff.theme.SuccessColor
@@ -101,7 +103,14 @@ private fun CategoryExpandableRow(
                 .padding(start = indent, end = 16.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = category.icon, style = MaterialTheme.typography.titleMedium)
+            CategoryIcon(
+                icon = category.icon,
+                iconType = category.iconType,
+                color = category.color,
+                backgroundSize = 40.dp,
+                iconSize = 20.dp,
+                fontSize = 20.sp
+            )
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
@@ -174,7 +183,14 @@ private fun QuickCategoryChip(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = category.icon, style = MaterialTheme.typography.titleMedium)
+            CategoryIcon(
+                icon = category.icon,
+                iconType = category.iconType,
+                color = category.color,
+                backgroundSize = 40.dp,
+                iconSize = 20.dp,
+                fontSize = 20.sp
+            )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = category.name, color = TextPrimary, style = MaterialTheme.typography.bodyLarge)

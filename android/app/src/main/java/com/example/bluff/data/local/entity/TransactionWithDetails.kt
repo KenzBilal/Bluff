@@ -29,6 +29,7 @@ data class TransactionWithDetails(
         toAccountName = toAccount?.name,
         categoryName = category?.name,
         categoryIcon = category?.icon,
+        categoryIconType = category?.iconType ?: "emoji",
         categoryColor = category?.color
     )
 }

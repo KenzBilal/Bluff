@@ -125,49 +125,49 @@ class CategoryRepositoryImpl(
         val spotifyId = UUID.randomUUID().toString()
 
         val defaults = listOf(
-            Category(id = foodId, userId = userId, name = "Food", type = CategoryType.EXPENSE, icon = "🍽️", color = "#FF6B6B", isSystem = true, quickAmounts = listOf(4000, 6000, 8000)),
-            Category(id = mealsId, userId = userId, name = "Meals", type = CategoryType.EXPENSE, icon = "🍛", color = "#FF6B6B", parentId = foodId, isSystem = true),
-            Category(id = breakfastId, userId = userId, name = "Breakfast", type = CategoryType.EXPENSE, icon = "🌅", color = "#FF6B6B", parentId = mealsId, isSystem = true, quickAmounts = listOf(3000, 5000)),
-            Category(id = lunchId, userId = userId, name = "Lunch", type = CategoryType.EXPENSE, icon = "🍛", color = "#FF6B6B", parentId = mealsId, isSystem = true, quickAmounts = listOf(6000, 8000, 10000)),
-            Category(id = dinnerId, userId = userId, name = "Dinner", type = CategoryType.EXPENSE, icon = "🌙", color = "#FF6B6B", parentId = mealsId, isSystem = true, quickAmounts = listOf(8000, 10000, 12000)),
-            Category(id = drinksId, userId = userId, name = "Drinks", type = CategoryType.EXPENSE, icon = "☕", color = "#FF6B6B", parentId = foodId, isSystem = true),
-            Category(id = teaCoffeeId, userId = userId, name = "Tea/Coffee", type = CategoryType.EXPENSE, icon = "☕", color = "#FF6B6B", parentId = drinksId, isSystem = true, quickAmounts = listOf(2000, 3000, 4000)),
-            Category(id = juiceId, userId = userId, name = "Juice", type = CategoryType.EXPENSE, icon = "🧃", color = "#FF6B6B", parentId = drinksId, isSystem = true, quickAmounts = listOf(3000, 4000)),
-            Category(id = snacksId, userId = userId, name = "Snacks", type = CategoryType.EXPENSE, icon = "🍿", color = "#FF6B6B", parentId = foodId, isSystem = true, quickAmounts = listOf(1000, 2000, 3000)),
+            Category(id = foodId, userId = userId, name = "Food", type = CategoryType.EXPENSE, icon = "restaurant", color = "#FF6B6B", isSystem = true, iconType = "material", quickAmounts = listOf(4000, 6000, 8000)),
+            Category(id = mealsId, userId = userId, name = "Meals", type = CategoryType.EXPENSE, icon = "lunch_dining", color = "#FF6B6B", parentId = foodId, isSystem = true, iconType = "material"),
+            Category(id = breakfastId, userId = userId, name = "Breakfast", type = CategoryType.EXPENSE, icon = "wb_sunny", color = "#FF6B6B", parentId = mealsId, isSystem = true, iconType = "material", quickAmounts = listOf(3000, 5000)),
+            Category(id = lunchId, userId = userId, name = "Lunch", type = CategoryType.EXPENSE, icon = "lunch_dining", color = "#FF6B6B", parentId = mealsId, isSystem = true, iconType = "material", quickAmounts = listOf(6000, 8000, 10000)),
+            Category(id = dinnerId, userId = userId, name = "Dinner", type = CategoryType.EXPENSE, icon = "dark_mode", color = "#FF6B6B", parentId = mealsId, isSystem = true, iconType = "material", quickAmounts = listOf(8000, 10000, 12000)),
+            Category(id = drinksId, userId = userId, name = "Drinks", type = CategoryType.EXPENSE, icon = "coffee", color = "#FF6B6B", parentId = foodId, isSystem = true, iconType = "material"),
+            Category(id = teaCoffeeId, userId = userId, name = "Tea/Coffee", type = CategoryType.EXPENSE, icon = "coffee", color = "#FF6B6B", parentId = drinksId, isSystem = true, iconType = "material", quickAmounts = listOf(2000, 3000, 4000)),
+            Category(id = juiceId, userId = userId, name = "Juice", type = CategoryType.EXPENSE, icon = "local_cafe", color = "#FF6B6B", parentId = drinksId, isSystem = true, iconType = "material", quickAmounts = listOf(3000, 4000)),
+            Category(id = snacksId, userId = userId, name = "Snacks", type = CategoryType.EXPENSE, icon = "popcorn", color = "#FF6B6B", parentId = foodId, isSystem = true, iconType = "material", quickAmounts = listOf(1000, 2000, 3000)),
 
-            Category(id = transportId, userId = userId, name = "Transport", type = CategoryType.EXPENSE, icon = "🚌", color = "#4ECDC4", isSystem = true, quickAmounts = listOf(4000, 6000, 8000)),
-            Category(id = autoId, userId = userId, name = "Auto", type = CategoryType.EXPENSE, icon = "🛺", color = "#4ECDC4", parentId = transportId, isSystem = true, quickAmounts = listOf(4000, 6000, 8000)),
-            Category(id = busId, userId = userId, name = "Bus", type = CategoryType.EXPENSE, icon = "🚌", color = "#4ECDC4", parentId = transportId, isSystem = true, quickAmounts = listOf(2000, 3000)),
-            Category(id = cabId, userId = userId, name = "Cab", type = CategoryType.EXPENSE, icon = "🚕", color = "#4ECDC4", parentId = transportId, isSystem = true, quickAmounts = listOf(8000, 12000, 16000)),
+            Category(id = transportId, userId = userId, name = "Transport", type = CategoryType.EXPENSE, icon = "directions_bus", color = "#4ECDC4", isSystem = true, iconType = "material", quickAmounts = listOf(4000, 6000, 8000)),
+            Category(id = autoId, userId = userId, name = "Auto", type = CategoryType.EXPENSE, icon = "local_taxi", color = "#4ECDC4", parentId = transportId, isSystem = true, iconType = "material", quickAmounts = listOf(4000, 6000, 8000)),
+            Category(id = busId, userId = userId, name = "Bus", type = CategoryType.EXPENSE, icon = "directions_bus", color = "#4ECDC4", parentId = transportId, isSystem = true, iconType = "material", quickAmounts = listOf(2000, 3000)),
+            Category(id = cabId, userId = userId, name = "Cab", type = CategoryType.EXPENSE, icon = "local_taxi", color = "#4ECDC4", parentId = transportId, isSystem = true, iconType = "material", quickAmounts = listOf(8000, 12000, 16000)),
 
-            Category(id = shoppingId, userId = userId, name = "Shopping", type = CategoryType.EXPENSE, icon = "🛍️", color = "#45B7D1", isSystem = true),
-            Category(id = groceriesId, userId = userId, name = "Groceries", type = CategoryType.EXPENSE, icon = "🛒", color = "#45B7D1", parentId = shoppingId, isSystem = true, quickAmounts = listOf(20000, 50000, 100000)),
-            Category(id = clothesId, userId = userId, name = "Clothes", type = CategoryType.EXPENSE, icon = "👕", color = "#45B7D1", parentId = shoppingId, isSystem = true, quickAmounts = listOf(50000, 100000, 200000)),
+            Category(id = shoppingId, userId = userId, name = "Shopping", type = CategoryType.EXPENSE, icon = "shopping_bag", color = "#45B7D1", isSystem = true, iconType = "material"),
+            Category(id = groceriesId, userId = userId, name = "Groceries", type = CategoryType.EXPENSE, icon = "shopping_cart", color = "#45B7D1", parentId = shoppingId, isSystem = true, iconType = "material", quickAmounts = listOf(20000, 50000, 100000)),
+            Category(id = clothesId, userId = userId, name = "Clothes", type = CategoryType.EXPENSE, icon = "checkroom", color = "#45B7D1", parentId = shoppingId, isSystem = true, iconType = "material", quickAmounts = listOf(50000, 100000, 200000)),
 
-            Category(id = collegeId, userId = userId, name = "College", type = CategoryType.EXPENSE, icon = "📚", color = "#96CEB4", isSystem = true),
-            Category(id = booksId, userId = userId, name = "Books", type = CategoryType.EXPENSE, icon = "📖", color = "#96CEB4", parentId = collegeId, isSystem = true, quickAmounts = listOf(20000, 50000)),
-            Category(id = stationeryId, userId = userId, name = "Stationery", type = CategoryType.EXPENSE, icon = "✏️", color = "#96CEB4", parentId = collegeId, isSystem = true, quickAmounts = listOf(10000, 20000)),
+            Category(id = collegeId, userId = userId, name = "College", type = CategoryType.EXPENSE, icon = "school", color = "#96CEB4", isSystem = true, iconType = "material"),
+            Category(id = booksId, userId = userId, name = "Books", type = CategoryType.EXPENSE, icon = "menu_book", color = "#96CEB4", parentId = collegeId, isSystem = true, iconType = "material", quickAmounts = listOf(20000, 50000)),
+            Category(id = stationeryId, userId = userId, name = "Stationery", type = CategoryType.EXPENSE, icon = "edit", color = "#96CEB4", parentId = collegeId, isSystem = true, iconType = "material", quickAmounts = listOf(10000, 20000)),
 
-            Category(id = entertainmentId, userId = userId, name = "Entertainment", type = CategoryType.EXPENSE, icon = "🎮", color = "#FFEAA7", isSystem = true),
-            Category(id = moviesId, userId = userId, name = "Movies", type = CategoryType.EXPENSE, icon = "🎬", color = "#FFEAA7", parentId = entertainmentId, isSystem = true, quickAmounts = listOf(15000, 20000, 30000)),
-            Category(id = gamesId, userId = userId, name = "Games", type = CategoryType.EXPENSE, icon = "🎮", color = "#FFEAA7", parentId = entertainmentId, isSystem = true, quickAmounts = listOf(10000, 20000)),
+            Category(id = entertainmentId, userId = userId, name = "Entertainment", type = CategoryType.EXPENSE, icon = "sports_esports", color = "#FFEAA7", isSystem = true, iconType = "material"),
+            Category(id = moviesId, userId = userId, name = "Movies", type = CategoryType.EXPENSE, icon = "movie", color = "#FFEAA7", parentId = entertainmentId, isSystem = true, iconType = "material", quickAmounts = listOf(15000, 20000, 30000)),
+            Category(id = gamesId, userId = userId, name = "Games", type = CategoryType.EXPENSE, icon = "sports_esports", color = "#FFEAA7", parentId = entertainmentId, isSystem = true, iconType = "material", quickAmounts = listOf(10000, 20000)),
 
-            Category(id = billsId, userId = userId, name = "Bills", type = CategoryType.EXPENSE, icon = "💡", color = "#DDA0DD", isSystem = true),
-            Category(id = electricityId, userId = userId, name = "Electricity", type = CategoryType.EXPENSE, icon = "⚡", color = "#DDA0DD", parentId = billsId, isSystem = true, quickAmounts = listOf(50000, 100000, 200000)),
-            Category(id = internetId, userId = userId, name = "Internet", type = CategoryType.EXPENSE, icon = "🌐", color = "#DDA0DD", parentId = billsId, isSystem = true, quickAmounts = listOf(50000, 100000)),
-            Category(id = phoneId, userId = userId, name = "Phone", type = CategoryType.EXPENSE, icon = "📱", color = "#DDA0DD", parentId = billsId, isSystem = true, quickAmounts = listOf(20000, 50000)),
+            Category(id = billsId, userId = userId, name = "Bills", type = CategoryType.EXPENSE, icon = "lightbulb", color = "#DDA0DD", isSystem = true, iconType = "material"),
+            Category(id = electricityId, userId = userId, name = "Electricity", type = CategoryType.EXPENSE, icon = "bolt", color = "#DDA0DD", parentId = billsId, isSystem = true, iconType = "material", quickAmounts = listOf(50000, 100000, 200000)),
+            Category(id = internetId, userId = userId, name = "Internet", type = CategoryType.EXPENSE, icon = "language", color = "#DDA0DD", parentId = billsId, isSystem = true, iconType = "material", quickAmounts = listOf(50000, 100000)),
+            Category(id = phoneId, userId = userId, name = "Phone", type = CategoryType.EXPENSE, icon = "phone_iphone", color = "#DDA0DD", parentId = billsId, isSystem = true, iconType = "material", quickAmounts = listOf(20000, 50000)),
 
-            Category(id = healthId, userId = userId, name = "Health", type = CategoryType.EXPENSE, icon = "🏥", color = "#98FB98", isSystem = true),
-            Category(id = medicineId, userId = userId, name = "Medicine", type = CategoryType.EXPENSE, icon = "💊", color = "#98FB98", parentId = healthId, isSystem = true, quickAmounts = listOf(10000, 20000, 50000)),
-            Category(id = doctorId, userId = userId, name = "Doctor", type = CategoryType.EXPENSE, icon = "👨‍⚕️", color = "#98FB98", parentId = healthId, isSystem = true, quickAmounts = listOf(200000, 500000)),
+            Category(id = healthId, userId = userId, name = "Health", type = CategoryType.EXPENSE, icon = "local_hospital", color = "#98FB98", isSystem = true, iconType = "material"),
+            Category(id = medicineId, userId = userId, name = "Medicine", type = CategoryType.EXPENSE, icon = "medication", color = "#98FB98", parentId = healthId, isSystem = true, iconType = "material", quickAmounts = listOf(10000, 20000, 50000)),
+            Category(id = doctorId, userId = userId, name = "Doctor", type = CategoryType.EXPENSE, icon = "medical_services", color = "#98FB98", parentId = healthId, isSystem = true, iconType = "material", quickAmounts = listOf(200000, 500000)),
 
-            Category(id = subscriptionsId, userId = userId, name = "Subscriptions", type = CategoryType.EXPENSE, icon = "📱", color = "#F0E68C", isSystem = true),
-            Category(id = netflixId, userId = userId, name = "Netflix", type = CategoryType.EXPENSE, icon = "🎬", color = "#F0E68C", parentId = subscriptionsId, isSystem = true, quickAmounts = listOf(20000, 65000)),
-            Category(id = spotifyId, userId = userId, name = "Spotify", type = CategoryType.EXPENSE, icon = "🎵", color = "#F0E68C", parentId = subscriptionsId, isSystem = true, quickAmounts = listOf(10000, 15000)),
+            Category(id = subscriptionsId, userId = userId, name = "Subscriptions", type = CategoryType.EXPENSE, icon = "phone_iphone", color = "#F0E68C", isSystem = true, iconType = "material"),
+            Category(id = netflixId, userId = userId, name = "Netflix", type = CategoryType.EXPENSE, icon = "movie", color = "#F0E68C", parentId = subscriptionsId, isSystem = true, iconType = "material", quickAmounts = listOf(20000, 65000)),
+            Category(id = spotifyId, userId = userId, name = "Spotify", type = CategoryType.EXPENSE, icon = "music_note", color = "#F0E68C", parentId = subscriptionsId, isSystem = true, iconType = "material", quickAmounts = listOf(10000, 15000)),
 
-            Category(id = UUID.randomUUID().toString(), userId = userId, name = "Salary", type = CategoryType.INCOME, icon = "💰", color = "#00C896", isSystem = true),
-            Category(id = UUID.randomUUID().toString(), userId = userId, name = "Freelance", type = CategoryType.INCOME, icon = "💻", color = "#3A8EFF", isSystem = true),
-            Category(id = UUID.randomUUID().toString(), userId = userId, name = "Other", type = CategoryType.BOTH, icon = "📦", color = "#888888", isSystem = true)
+            Category(id = UUID.randomUUID().toString(), userId = userId, name = "Salary", type = CategoryType.INCOME, icon = "payments", color = "#00C896", isSystem = true, iconType = "material"),
+            Category(id = UUID.randomUUID().toString(), userId = userId, name = "Freelance", type = CategoryType.INCOME, icon = "laptop", color = "#3A8EFF", isSystem = true, iconType = "material"),
+            Category(id = UUID.randomUUID().toString(), userId = userId, name = "Other", type = CategoryType.BOTH, icon = "inventory_2", color = "#888888", isSystem = true, iconType = "material")
         )
         defaults.forEach { addCategory(it) }
     }

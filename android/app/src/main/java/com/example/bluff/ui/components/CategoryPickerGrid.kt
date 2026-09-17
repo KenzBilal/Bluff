@@ -23,6 +23,7 @@ import com.example.bluff.domain.model.Category
 import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
+import com.example.bluff.ui.categories.CategoryIcon
 
 @Composable
 fun CategoryPickerGrid(
@@ -50,7 +51,14 @@ fun CategoryPickerGrid(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Text(text = category.icon, fontSize = 24.sp)
+                        CategoryIcon(
+                            icon = category.icon,
+                            iconType = category.iconType,
+                            color = category.color,
+                            backgroundSize = 48.dp,
+                            iconSize = 24.dp,
+                            fontSize = 24.sp
+                        )
                     }
                 }
                 Text(

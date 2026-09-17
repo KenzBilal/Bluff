@@ -27,6 +27,7 @@ data class Transaction(
     val toAccountName: String? = null,
     val categoryName: String? = null,
     val categoryIcon: String? = null,
+    val categoryIconType: String = "emoji",
     val categoryColor: String? = null,
     val tags: List<String> = emptyList()
 )
