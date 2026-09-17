@@ -43,7 +43,8 @@ fun AddEditCategorySheet(
     category: Category?,
     allCategories: List<Category>,
     onDismiss: () -> Unit,
-    onSave: (name: String, type: CategoryType, icon: String, color: String, parentId: String?, iconType: String) -> Unit
+    onSave: (name: String, type: CategoryType, icon: String, color: String, parentId: String?, iconType: String) -> Unit,
+    onDelete: (() -> Unit)? = null
 ) {
     var name by remember { mutableStateOf(category?.name ?: "") }
     var type by remember { mutableStateOf(category?.type ?: CategoryType.EXPENSE) }
@@ -242,6 +243,7 @@ fun AddEditCategorySheet(
                 TextButton(
                     onClick = {
                         category?.let { cat ->
+                            onDelete?.invoke()
                             showDeleteDialog = false
                             onDismiss()
                         }
