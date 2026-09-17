@@ -138,7 +138,8 @@ private val materialIconMap: Map<String, ImageVector> = mapOf(
     "lightbulb" to Icons.Rounded.Lightbulb,
     "bolt" to Icons.Rounded.Bolt,
     "language" to Icons.Rounded.Language,
-    "inventory_2" to Icons.Rounded.Inventory2
+    "inventory_2" to Icons.Rounded.Inventory2,
+    "edit" to Icons.Rounded.Edit
 )
 
 @Composable
