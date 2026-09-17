@@ -27,6 +27,10 @@ import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
 import com.example.bluff.domain.usecase.budget.UpsertBudgetUseCase
 import com.example.bluff.domain.usecase.category.AddCategoryUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
+import com.example.bluff.domain.usecase.cycle.AddCycleUseCase
+import com.example.bluff.domain.usecase.cycle.DeactivateCycleUseCase
+import com.example.bluff.domain.usecase.cycle.GetCyclesUseCase
+import com.example.bluff.domain.usecase.cycle.MarkCyclePaidUseCase
 import com.example.bluff.domain.usecase.goal.DeleteGoalUseCase
 import com.example.bluff.domain.usecase.goal.GetGoalsUseCase
 import com.example.bluff.domain.usecase.goal.UpsertGoalUseCase
@@ -97,6 +101,11 @@ class AppContainer(context: Context) {
 
     val getAppSettingsUseCase = GetAppSettingsUseCase(appSettingsRepository)
     val updateAppSettingsUseCase = UpdateAppSettingsUseCase(appSettingsRepository)
+
+    val getCyclesUseCase = GetCyclesUseCase(expenseCycleRepository)
+    val addCycleUseCase = AddCycleUseCase(expenseCycleRepository)
+    val markCyclePaidUseCase = MarkCyclePaidUseCase(expenseCycleRepository)
+    val deactivateCycleUseCase = DeactivateCycleUseCase(expenseCycleRepository)
 
     // --- Utility ---
     val db get() = database
