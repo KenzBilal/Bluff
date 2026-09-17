@@ -8,9 +8,11 @@ import com.example.bluff.data.repository.AppSettingsRepositoryImpl
 import com.example.bluff.data.repository.BudgetRepositoryImpl
 import com.example.bluff.data.repository.CategoryRepositoryImpl
 import com.example.bluff.data.repository.DebtRepositoryImpl
+import com.example.bluff.data.repository.ExpenseCycleRepositoryImpl
 import com.example.bluff.data.repository.GoalRepositoryImpl
 import com.example.bluff.data.repository.RecurringTransactionRepositoryImpl
 import com.example.bluff.data.repository.TransactionRepositoryImpl
+import com.example.bluff.domain.repository.ExpenseCycleRepository
 import com.example.bluff.domain.usecase.account.AddAccountUseCase
 import com.example.bluff.domain.usecase.account.DeleteAccountUseCase
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
@@ -58,6 +60,7 @@ class AppContainer(context: Context) {
     val recurringTransactionRepository = RecurringTransactionRepositoryImpl(database) { getUserId() }
     val appSettingsRepository = AppSettingsRepositoryImpl(database) { getUserId() }
     val debtRepository = DebtRepositoryImpl(database) { getUserId() }
+    val expenseCycleRepository: ExpenseCycleRepository = ExpenseCycleRepositoryImpl(database) { getUserId() }
 
     // --- Use Cases ---
     val getTransactionsUseCase = GetTransactionsUseCase(transactionRepository)
