@@ -157,8 +157,8 @@ fun CategoriesScreen(onBack: () -> Unit) {
             category = editingCategory,
             allCategories = categories,
             onDismiss = { showAddEdit = false },
-            onSave = { name, type, icon, color, parentId ->
-                vm.saveCategory(name, type, icon, color, editingCategory?.id, parentId)
+            onSave = { name, type, icon, color, parentId, iconType ->
+                vm.saveCategory(name, type, icon, color, editingCategory?.id, parentId, iconType)
             }
         )
     }

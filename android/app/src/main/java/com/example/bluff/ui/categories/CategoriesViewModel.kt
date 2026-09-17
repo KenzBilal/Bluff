@@ -42,7 +42,8 @@ class CategoriesViewModel(
         icon: String,
         color: String,
         existingId: String? = null,
-        parentId: String? = null
+        parentId: String? = null,
+        iconType: String = "material"
     ) {
         viewModelScope.launch {
             val category = Category(
@@ -52,7 +53,8 @@ class CategoriesViewModel(
                 type = type,
                 icon = icon,
                 color = color,
-                parentId = parentId
+                parentId = parentId,
+                iconType = iconType
             )
             addCategoryUseCase(category)
             loadCategoryTree()

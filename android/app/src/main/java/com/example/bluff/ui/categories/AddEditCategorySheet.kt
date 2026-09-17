@@ -1,24 +1,14 @@
 package com.example.bluff.ui.categories
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -28,60 +18,42 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.core.graphics.toColorInt
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.bluff.domain.model.Category
 import com.example.bluff.domain.model.CategoryType
 import com.example.bluff.theme.Background
 import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
-import com.example.bluff.theme.TextSecondary
 import com.example.bluff.ui.components.BluffButton
 import com.example.bluff.ui.components.BluffChip
 import com.example.bluff.ui.components.BluffTextField
 
-private val defaultIcons = listOf(
-    "🍽️", "🚌", "🛍️", "📚", "🎮", "💡",
-    "🏥", "📱", "💰", "💻", "📦", "🏠",
-    "✈️", "🎬", "🎵", "🏋️", "☕", "🎁",
-    "🐱", "🚗", "💊", "📝", "🎨", "🔧"
-)
-
-private val defaultColors = listOf(
-    "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
-    "#FFEAA7", "#DDA0DD", "#98FB98", "#F0E68C",
-    "#00C896", "#3A8EFF", "#888888", "#FF8C42",
-    "#6C63FF", "#FF4757", "#2ED573", "#FFA502",
-    "#70A1FF", "#7BED9F", "#ECCC68", "#FF6348"
-)
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditCategorySheet(
     category: Category?,
     allCategories: List<Category>,
     onDismiss: () -> Unit,
-    onSave: (name: String, type: CategoryType, icon: String, color: String, parentId: String?) -> Unit
+    onSave: (name: String, type: CategoryType, icon: String, color: String, parentId: String?, iconType: String) -> Unit
 ) {
     var name by remember { mutableStateOf(category?.name ?: "") }
     var type by remember { mutableStateOf(category?.type ?: CategoryType.EXPENSE) }
-    var icon by remember { mutableStateOf(category?.icon ?: "📦") }
+    var icon by remember { mutableStateOf(category?.icon ?: "shopping_cart") }
     var color by remember { mutableStateOf(category?.color ?: "#888888") }
     var parentId by remember { mutableStateOf(category?.parentId) }
     var parentExpanded by remember { mutableStateOf(false) }
+    var iconType by remember { mutableStateOf(category?.iconType ?: "material") }
+    var showIconPicker by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     val excludedIds = remember(category) {
         if (category == null) emptySet()
@@ -144,10 +116,22 @@ fun AddEditCategorySheet(
                 onExpandedChange = { parentExpanded = it }
             ) {
                 OutlinedTextField(
-                    value = selectedParent?.let { "${it.icon} ${it.name}" } ?: "None (Root Category)",
+                    value = selectedParent?.let { parent ->
+                        parent.name
+                    } ?: "None (Root Category)",
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
+                    leadingIcon = {
+                        selectedParent?.let { parent ->
+                            CategoryIcon(
+                                icon = parent.icon,
+                                iconType = parent.iconType,
+                                color = parent.color,
+                                modifier = Modifier
+                            )
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
@@ -174,7 +158,15 @@ fun AddEditCategorySheet(
                     )
                     rootCategories.forEach { rootCat ->
                         DropdownMenuItem(
-                            text = { Text("${rootCat.icon} ${rootCat.name}") },
+                            text = { Text(rootCat.name) },
+                            leadingIcon = {
+                                CategoryIcon(
+                                    icon = rootCat.icon,
+                                    iconType = rootCat.iconType,
+                                    color = rootCat.color,
+                                    modifier = Modifier
+                                )
+                            },
                             onClick = {
                                 parentId = rootCat.id
                                 parentExpanded = false
@@ -188,54 +180,21 @@ fun AddEditCategorySheet(
 
             Text("Icon", color = TextPrimary)
             Spacer(modifier = Modifier.height(8.dp))
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(8),
-                modifier = Modifier.height(120.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(defaultIcons) { emoji ->
-                    Surface(
-                        shape = CircleShape,
-                        color = if (icon == emoji) Primary else CardColor,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable { icon = emoji }
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(emoji, fontSize = 18.sp)
-                        }
-                    }
-                }
-            }
+            CategoryIcon(
+                icon = icon,
+                iconType = iconType,
+                color = color,
+                modifier = Modifier.clickable { showIconPicker = true },
+                backgroundSize = 64.dp,
+                iconSize = 32.dp
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Color", color = TextPrimary)
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                defaultColors.forEach { hex ->
-                    val parsedColor = try {
-                        Color(hex.toColorInt())
-                    } catch (e: Exception) {
-                        Primary
-                    }
-                    Surface(
-                        shape = CircleShape,
-                        color = parsedColor,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .then(
-                                if (color == hex) Modifier.border(3.dp, Color.White, CircleShape)
-                                else Modifier
-                            )
-                            .clickable { color = hex }
-                    ) {}
-                }
-            }
+            ColorPickerSection(
+                selectedColor = color,
+                onSelect = { color = it }
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -243,12 +202,59 @@ fun AddEditCategorySheet(
                 text = if (category != null) "Update" else "Create",
                 onClick = {
                     if (name.isNotBlank()) {
-                        onSave(name, type, icon, color, parentId)
+                        onSave(name, type, icon, color, parentId, iconType)
                         onDismiss()
                     }
                 }
             )
+
+            if (category != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                TextButton(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Delete Category", color = MaterialTheme.colorScheme.error)
+                }
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+
+    if (showIconPicker) {
+        IconPickerSheet(
+            selectedIcon = icon,
+            onSelect = { selectedIcon ->
+                icon = selectedIcon
+                iconType = "material"
+            },
+            onDismiss = { showIconPicker = false }
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Category") },
+            text = { Text("Are you sure you want to delete \"${category?.name}\"? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        category?.let { cat ->
+                            showDeleteDialog = false
+                            onDismiss()
+                        }
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
