@@ -2,6 +2,7 @@ package com.example.bluff.ui.cycles
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -154,11 +155,23 @@ private fun CycleCard(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 13.sp
                 )
-                Row {
-                    IconButton(onClick = onMarkPaid, modifier = Modifier.size(32.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onMarkPaid),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(Icons.Default.Check, "Mark paid", tint = IncomeColor, modifier = Modifier.size(18.dp))
                     }
-                    IconButton(onClick = onDeactivate, modifier = Modifier.size(32.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onDeactivate),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(Icons.Default.Delete, "Deactivate", tint = ExpenseColor, modifier = Modifier.size(18.dp))
                     }
                 }

@@ -2,6 +2,7 @@ package com.example.bluff.ui.debt
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -125,12 +126,13 @@ private fun DebtDetailCard(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    IconButton(
-                        onClick = onMarkPaid,
+                    Box(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(IncomeColor.copy(alpha = 0.1f))
+                            .clickable(onClick = onMarkPaid),
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
@@ -139,12 +141,13 @@ private fun DebtDetailCard(
                             modifier = Modifier.size(16.dp)
                         )
                     }
-                    IconButton(
-                        onClick = { showDeleteConfirm = true },
+                    Box(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(ExpenseColor.copy(alpha = 0.1f))
+                            .clickable(onClick = { showDeleteConfirm = true }),
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
