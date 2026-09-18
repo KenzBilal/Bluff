@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.Budget
 import com.example.bluff.domain.model.ExpenseCycle
 import com.example.bluff.domain.model.Goal
+import com.example.bluff.domain.model.RecurringTransaction
 import com.example.bluff.theme.*
 import com.example.bluff.ui.components.*
 import com.example.bluff.ui.util.toDisplayAmount
@@ -44,6 +45,7 @@ fun HomeScreen(
     val activeBudget by viewModel.activeBudget.collectAsState()
     val topGoals by viewModel.topGoals.collectAsState()
     val upcomingCycles by viewModel.upcomingCycles.collectAsState()
+    val dueRecurring by viewModel.dueRecurringTransactions.collectAsState()
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
@@ -223,6 +225,37 @@ fun HomeScreen(
                 GoalRow(goal = goal, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
             }
         }
+    }
+
+    if (dueRecurring.isNotEmpty()) {
+        val currentDue = dueRecurring.first()
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissRecurring(currentDue.id) },
+            containerColor = CardColor,
+            title = {
+                Text(
+                    text = "Recurring Payment Due",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Did you pay ${currentDue.name} (${currentDue.amountMinor.toDisplayAmount()})?",
+                    color = TextSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.payRecurring(currentDue) }) {
+                    Text("Paid", color = Primary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissRecurring(currentDue.id) }) {
+                    Text("Later", color = TextSecondary)
+                }
+            }
+        )
     }
 }
 

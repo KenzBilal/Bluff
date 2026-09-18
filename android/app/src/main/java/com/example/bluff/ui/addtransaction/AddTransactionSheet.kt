@@ -8,6 +8,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -48,6 +50,7 @@ fun AddTransactionSheet(
     val debtDirection by viewModel.debtDirection.collectAsState()
     val debtContactName by viewModel.debtContactName.collectAsState()
     val transferContactName by viewModel.transferContactName.collectAsState()
+    val dueRecurring by viewModel.dueRecurringTransactions.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     var showAccountPicker by remember { mutableStateOf(false) }
@@ -116,6 +119,30 @@ fun AddTransactionSheet(
                 fontSize = 22.sp,
                 modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
             )
+
+            // ── Recurring Suggestions ──────────────────────────────────────
+            if (dueRecurring.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) {
+                    items(dueRecurring) { recurring ->
+                        AssistChip(
+                            onClick = { viewModel.applyRecurringSuggestion(recurring) },
+                            label = { Text("${recurring.name} (${recurring.amountMinor.toDisplayAmount()})") },
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = CardColor,
+                                labelColor = Primary
+                            ),
+                            border = AssistChipDefaults.assistChipBorder(
+                                enabled = true,
+                                borderColor = Primary.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
+                }
+            }
 
             // ── Amount ─────────────────────────────────────────────────────
             Spacer(modifier = Modifier.height(12.dp))

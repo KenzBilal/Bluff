@@ -15,6 +15,9 @@ import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
 import com.example.bluff.domain.usecase.goal.GetGoalsUseCase
 import com.example.bluff.domain.model.ExpenseCycle
 import com.example.bluff.domain.usecase.cycle.GetCyclesUseCase
+import com.example.bluff.domain.usecase.recurring.GetRecurringTransactionsUseCase
+import com.example.bluff.domain.usecase.recurring.PayRecurringTransactionUseCase
+import com.example.bluff.domain.model.RecurringTransaction
 import com.example.bluff.domain.usecase.transaction.GetTransactionsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
@@ -31,7 +35,9 @@ class HomeViewModel(
     private val getAccountsUseCase: GetAccountsUseCase,
     private val getBudgetsUseCase: GetBudgetsUseCase,
     private val getGoalsUseCase: GetGoalsUseCase,
-    private val getCyclesUseCase: GetCyclesUseCase
+    private val getCyclesUseCase: GetCyclesUseCase,
+    private val getRecurringTransactionsUseCase: GetRecurringTransactionsUseCase,
+    private val payRecurringTransactionUseCase: PayRecurringTransactionUseCase
 ) : ViewModel() {
 
     private val now = LocalDate.now()
@@ -71,6 +77,25 @@ class HomeViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    private val _dismissedRecurringIds = MutableStateFlow<Set<String>>(emptySet())
+
+    val dueRecurringTransactions: StateFlow<List<RecurringTransaction>> = getRecurringTransactionsUseCase.getActive()
+        .map { recurring -> 
+            val dismissed = _dismissedRecurringIds.value
+            recurring.filter { !it.nextRunDate.isAfter(now) && !dismissed.contains(it.id) }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun dismissRecurring(id: String) {
+        _dismissedRecurringIds.value = _dismissedRecurringIds.value + id
+    }
+
+    fun payRecurring(recurring: RecurringTransaction) {
+        viewModelScope.launch {
+            payRecurringTransactionUseCase(recurring)
+        }
+    }
+
     init {
         updateGreeting()
     }
@@ -93,7 +118,9 @@ class HomeViewModel(
                     container.getAccountsUseCase,
                     container.getBudgetsUseCase,
                     container.getGoalsUseCase,
-                    container.getCyclesUseCase
+                    container.getCyclesUseCase,
+                    container.getRecurringTransactionsUseCase,
+                    container.payRecurringTransactionUseCase
                 )
             }
         }

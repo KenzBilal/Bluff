@@ -12,12 +12,16 @@ import com.example.bluff.domain.model.Debt
 import com.example.bluff.domain.model.DebtDirection
 import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
+import com.example.bluff.domain.model.RecurringTransaction
 import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.category.GetCategoriesUseCase
 import com.example.bluff.domain.usecase.category.QuickSuggestions
 import com.example.bluff.domain.usecase.cycle.AddCycleUseCase
 import com.example.bluff.domain.usecase.debt.AddDebtUseCase
 import com.example.bluff.domain.usecase.transaction.AddTransactionUseCase
+import com.example.bluff.domain.usecase.recurring.GetRecurringTransactionsUseCase
+import com.example.bluff.domain.usecase.recurring.PayRecurringTransactionUseCase
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,7 +38,9 @@ class AddTransactionViewModel(
     private val getAccountsUseCase: GetAccountsUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val addDebtUseCase: AddDebtUseCase,
-    private val addCycleUseCase: AddCycleUseCase
+    private val addCycleUseCase: AddCycleUseCase,
+    private val getRecurringTransactionsUseCase: GetRecurringTransactionsUseCase,
+    private val payRecurringTransactionUseCase: PayRecurringTransactionUseCase
 ) : ViewModel() {
 
     // ── Amount ──────────────────────────────────────────────────────────────
@@ -100,6 +106,15 @@ class AddTransactionViewModel(
 
     private val _monthlySpend = MutableStateFlow<Map<String, Long>>(emptyMap())
     val monthlySpend: StateFlow<Map<String, Long>> = _monthlySpend.asStateFlow()
+
+    val dueRecurringTransactions: StateFlow<List<RecurringTransaction>> = getRecurringTransactionsUseCase.getActive()
+        .map { recurring -> 
+            val now = LocalDate.now()
+            recurring.filter { !it.nextRunDate.isAfter(now) }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _selectedRecurringId = MutableStateFlow<String?>(null)
 
     init {
         viewModelScope.launch {
@@ -169,6 +184,16 @@ class AddTransactionViewModel(
         _amount.value = digits.toLongOrNull()?.times(100L) ?: 0L
     }
 
+    fun applyRecurringSuggestion(recurring: RecurringTransaction) {
+        _amount.value = recurring.amountMinor
+        _amountText.value = (recurring.amountMinor / 100).toString()
+        _note.value = recurring.name
+        _selectedAccountId.value = recurring.accountId
+        _selectedCategoryId.value = recurring.categoryId
+        _mode.value = EntryMode.EXPENSE
+        _selectedRecurringId.value = recurring.id
+    }
+
     fun save() {
         val currentAmount = _amount.value
         val accountId = _selectedAccountId.value
@@ -220,19 +245,28 @@ class AddTransactionViewModel(
             return
         }
         viewModelScope.launch {
-            val transaction = Transaction(
-                id = "", userId = "",
-                amountMinor = amount,
-                type = TransactionType.EXPENSE,
-                accountId = accountId,
-                categoryId = categoryId,
-                note = _note.value.ifBlank { null },
-                transactionDate = LocalDate.now()
-            )
-            addTransactionUseCase(transaction).fold(
-                onSuccess = { _saveResult.value = SaveResult.Success; resetForm() },
-                onFailure = { e -> _saveResult.value = SaveResult.Error(e.message ?: "Failed to save") }
-            )
+            val recurringId = _selectedRecurringId.value
+            val due = dueRecurringTransactions.value.find { it.id == recurringId }
+            if (due != null) {
+                payRecurringTransactionUseCase(due).fold(
+                    onSuccess = { _saveResult.value = SaveResult.Success; resetForm() },
+                    onFailure = { e -> _saveResult.value = SaveResult.Error(e.message ?: "Failed to save") }
+                )
+            } else {
+                val transaction = Transaction(
+                    id = "", userId = "",
+                    amountMinor = amount,
+                    type = TransactionType.EXPENSE,
+                    accountId = accountId,
+                    categoryId = categoryId,
+                    note = _note.value.ifBlank { null },
+                    transactionDate = LocalDate.now()
+                )
+                addTransactionUseCase(transaction).fold(
+                    onSuccess = { _saveResult.value = SaveResult.Success; resetForm() },
+                    onFailure = { e -> _saveResult.value = SaveResult.Error(e.message ?: "Failed to save") }
+                )
+            }
         }
     }
 
@@ -280,6 +314,7 @@ class AddTransactionViewModel(
         _transferContactName.value = ""
         _transferContactPhone.value = ""
         _debtDirection.value = DebtDirection.THEY_OWE
+        _selectedRecurringId.value = null
     }
 
     fun consumeSaveResult() { _saveResult.value = SaveResult.Idle }
@@ -299,7 +334,9 @@ class AddTransactionViewModel(
                     container.getAccountsUseCase,
                     container.getCategoriesUseCase,
                     container.addDebtUseCase,
-                    container.addCycleUseCase
+                    container.addCycleUseCase,
+                    container.getRecurringTransactionsUseCase,
+                    container.payRecurringTransactionUseCase
                 )
             }
         }

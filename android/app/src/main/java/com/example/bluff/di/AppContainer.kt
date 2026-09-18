@@ -37,6 +37,7 @@ import com.example.bluff.domain.usecase.goal.GetGoalsUseCase
 import com.example.bluff.domain.usecase.goal.UpsertGoalUseCase
 import com.example.bluff.domain.usecase.recurring.DeleteRecurringTransactionUseCase
 import com.example.bluff.domain.usecase.recurring.GetRecurringTransactionsUseCase
+import com.example.bluff.domain.usecase.recurring.PayRecurringTransactionUseCase
 import com.example.bluff.domain.usecase.recurring.UpsertRecurringTransactionUseCase
 import com.example.bluff.domain.usecase.settings.GetAppSettingsUseCase
 import com.example.bluff.domain.usecase.settings.UpdateAppSettingsUseCase
@@ -93,6 +94,7 @@ class AppContainer(context: Context) {
     val getRecurringTransactionsUseCase = GetRecurringTransactionsUseCase(recurringTransactionRepository)
     val upsertRecurringTransactionUseCase = UpsertRecurringTransactionUseCase(recurringTransactionRepository)
     val deleteRecurringTransactionUseCase = DeleteRecurringTransactionUseCase(recurringTransactionRepository)
+    val payRecurringTransactionUseCase = PayRecurringTransactionUseCase(recurringTransactionRepository, addTransactionUseCase)
 
     val getAnalyticsUseCase = GetAnalyticsUseCase(transactionRepository)
 

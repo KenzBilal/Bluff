@@ -12,7 +12,6 @@ import androidx.work.WorkerParameters
 import com.example.bluff.data.local.BluffDatabase
 import com.example.bluff.data.local.entity.CategoryCycleDefaultEntity
 import com.example.bluff.data.sync.CycleReminderWorker
-import com.example.bluff.data.sync.RecurringWorker
 import com.example.bluff.di.AppContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +27,7 @@ class BluffApplication : Application(), Configuration.Provider {
             workerParameters: WorkerParameters
         ): ListenableWorker? {
             return when (workerClassName) {
-                RecurringWorker::class.java.name ->
-                    RecurringWorker(appContext, workerParameters, AppContainer.instance.db)
+
                 CycleReminderWorker::class.java.name ->
                     CycleReminderWorker(appContext, workerParameters, AppContainer.instance.db)
                 else -> null
@@ -54,16 +52,6 @@ class BluffApplication : Application(), Configuration.Provider {
             )
             AppContainer.instance.db.categoryCycleDefaultDao().insertAll(defaults)
         }
-
-        val recurringWorkRequest = PeriodicWorkRequestBuilder<RecurringWorker>(
-            1, TimeUnit.DAYS
-        ).build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "recurring_transactions",
-            ExistingPeriodicWorkPolicy.KEEP,
-            recurringWorkRequest
-        )
 
         val cycleReminderWorkRequest = PeriodicWorkRequestBuilder<CycleReminderWorker>(
             1, TimeUnit.DAYS
