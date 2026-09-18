@@ -59,6 +59,9 @@ interface TransactionDao {
     @Query("DELETE FROM transactions")
     suspend fun deleteAll()
 
+    @Query("UPDATE transactions SET categoryId = NULL WHERE categoryId = :categoryId")
+    suspend fun nullOutCategoryId(categoryId: String)
+
     @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'EXPENSE' AND transactionDate >= :startDate AND transactionDate <= :endDate")
     fun getSpendingForPeriod(startDate: String, endDate: String): Flow<Long>
 

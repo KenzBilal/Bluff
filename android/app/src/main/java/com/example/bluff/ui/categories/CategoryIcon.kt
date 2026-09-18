@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.automirrored.rounded.ShowChart
+import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,8 +35,8 @@ private val materialIconMap: Map<String, ImageVector> = mapOf(
     "receipt" to Icons.Rounded.Receipt,
     "wallet" to Icons.Rounded.AccountBalanceWallet,
     "paid" to Icons.Rounded.Paid,
-    "trending_up" to Icons.Rounded.TrendingUp,
-    "show_chart" to Icons.Rounded.ShowChart,
+    "trending_up" to Icons.AutoMirrored.Rounded.TrendingUp,
+    "show_chart" to Icons.AutoMirrored.Rounded.ShowChart,
     "currency_exchange" to Icons.Rounded.CurrencyExchange,
     "request_quote" to Icons.Rounded.RequestQuote,
     // Transport
@@ -134,7 +137,7 @@ private val materialIconMap: Map<String, ImageVector> = mapOf(
     "elderly" to Icons.Rounded.Elderly,
     "groups" to Icons.Rounded.Groups,
     "volunteer_activism" to Icons.Rounded.VolunteerActivism,
-    "menu_book" to Icons.Rounded.MenuBook,
+    "menu_book" to Icons.AutoMirrored.Rounded.MenuBook,
     "lightbulb" to Icons.Rounded.Lightbulb,
     "bolt" to Icons.Rounded.Bolt,
     "language" to Icons.Rounded.Language,

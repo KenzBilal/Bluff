@@ -5,10 +5,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,15 +36,32 @@ fun AddEditGoalSheet(
     onSave: suspend (name: String, targetAmount: Long, targetDate: LocalDate?) -> Unit
 ) {
     var name by remember { mutableStateOf(goal?.name ?: "") }
-    var targetAmount by remember { mutableStateOf(goal?.targetAmountMinor?.toString() ?: "") }
+    var targetAmount by remember { mutableStateOf(goal?.targetAmountMinor?.let { (it / 100).toString() } ?: "") }
     var targetDateStr by remember { mutableStateOf(goal?.targetDate?.toString() ?: "") }
+
+    LaunchedEffect(goal) {
+        if (goal == null) {
+            name = ""
+            targetAmount = ""
+            targetDateStr = ""
+        } else {
+            name = goal.name
+            targetAmount = (goal.targetAmountMinor / 100).toString()
+            targetDateStr = goal.targetDate?.toString() ?: ""
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = Background
     ) {
         val coroutineScope = rememberCoroutineScope()
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+        ) {
             Text(
                 text = if (goal != null) "Edit Goal" else "New Goal",
                 color = TextPrimary,
@@ -79,11 +100,11 @@ fun AddEditGoalSheet(
                 text = if (goal != null) "Update" else "Create",
                 onClick = {
                     if (name.isNotBlank() && (targetAmount.toLongOrNull() ?: 0L) > 0) {
-                        val date = try {
-                            if (targetDateStr.isNotBlank()) LocalDate.parse(targetDateStr) else null
-                        } catch (e: Exception) { null }
                         coroutineScope.launch {
-                            onSave(name, targetAmount.toLongOrNull() ?: 0L, date)
+                            val date = try {
+                                if (targetDateStr.isNotBlank()) LocalDate.parse(targetDateStr) else null
+                            } catch (e: Exception) { null }
+                            onSave(name, targetAmount.toLongOrNull()?.times(100L) ?: 0L, date)
                             onDismiss()
                         }
                     }

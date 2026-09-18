@@ -22,6 +22,7 @@ private val DarkColorScheme = darkColorScheme(
     onError = TextPrimary
 )
 
+@Suppress("DEPRECATION")
 @Composable
 fun BluffTheme(content: @Composable () -> Unit) {
     val view = LocalView.current

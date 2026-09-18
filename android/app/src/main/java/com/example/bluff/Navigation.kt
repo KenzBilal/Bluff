@@ -2,8 +2,14 @@ package com.example.bluff
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,6 +51,7 @@ import com.example.bluff.theme.Background
 import com.example.bluff.theme.DividerColor
 import com.example.bluff.theme.Primary
 import com.example.bluff.theme.Surface
+import com.example.bluff.theme.SurfaceVariant
 import com.example.bluff.theme.TextSecondary
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
@@ -63,6 +70,7 @@ import com.example.bluff.ui.categories.CategoriesScreen
 import com.example.bluff.ui.cycles.CyclesScreen
 import com.example.bluff.ui.goals.GoalsScreen
 import com.example.bluff.ui.debt.DebtScreen
+import com.example.bluff.ui.debt.DebtDetailScreen
 import com.example.bluff.ui.home.HomeScreen
 import com.example.bluff.ui.more.MoreScreen
 import com.example.bluff.ui.onboarding.OnboardingScreen
@@ -122,18 +130,18 @@ private fun BluffMainApp() {
             if (isBottomNavVisible) {
                 FloatingActionButton(
                     onClick = { showAddTransaction = true },
-                    containerColor = Primary,
-                    contentColor = androidx.compose.ui.graphics.Color.White,
+                    containerColor = androidx.compose.ui.graphics.Color.White,
+                    contentColor = androidx.compose.ui.graphics.Color.Black,
                     elevation = FloatingActionButtonDefaults.elevation(
-                        defaultElevation = 8.dp,
-                        pressedElevation = 4.dp
+                        defaultElevation = 0.dp,
+                        pressedElevation = 0.dp
                     ),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
                 ) {
                     Icon(
                         Icons.Default.Add,
                         contentDescription = "Add transaction",
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -144,6 +152,12 @@ private fun BluffMainApp() {
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
+                transitionSpec = {
+                    (slideInHorizontally(tween(300)) { it / 3 } + fadeIn(tween(300))) togetherWith (slideOutHorizontally(tween(300)) { -it / 3 } + fadeOut(tween(300)))
+                },
+                popTransitionSpec = {
+                    (slideInHorizontally(tween(300)) { -it / 3 } + fadeIn(tween(300))) togetherWith (slideOutHorizontally(tween(300)) { it / 3 } + fadeOut(tween(300)))
+                },
                 entryProvider = entryProvider {
                     entry<HomeKey> { HomeScreen(onNavigateToTransactionDetail = {}) }
                     entry<CalendarKey> {
@@ -160,7 +174,19 @@ private fun BluffMainApp() {
                         )
                     }
                     entry<AnalyticsKey> { AnalyticsScreen() }
-                    entry<DebtKey> { DebtScreen() }
+                    entry<DebtKey> {
+                        DebtScreen(
+                            onNavigateToDetail = { contactName ->
+                                backStack.add(DebtDetailKey(contactName))
+                            }
+                        )
+                    }
+                    entry<DebtDetailKey> { key ->
+                        DebtDetailScreen(
+                            contactName = key.contactName,
+                            onBack = { backStack.removeLastOrNull() }
+                        )
+                    }
                     entry<MoreKey> {
                         MoreScreen(
                             onNavigateToAccounts = { backStack.add(AccountsKey) },
@@ -241,8 +267,7 @@ private fun BluffBottomNavBar(
 ) {
     NavigationBar(
         containerColor = Surface,
-        tonalElevation = 0.dp,
-        modifier = Modifier.height(80.dp)
+        tonalElevation = 0.dp
     ) {
         bottomNavItems.forEach { item ->
             val selected = currentKey == item.key
@@ -264,11 +289,11 @@ private fun BluffBottomNavBar(
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Primary,
-                    selectedTextColor = Primary,
+                    selectedIconColor = androidx.compose.ui.graphics.Color.White,
+                    selectedTextColor = androidx.compose.ui.graphics.Color.White,
                     unselectedIconColor = TextSecondary,
                     unselectedTextColor = TextSecondary,
-                    indicatorColor = Primary.copy(alpha = 0.15f)
+                    indicatorColor = SurfaceVariant
                 )
             )
         }

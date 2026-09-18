@@ -63,58 +63,62 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFF2A1F6E), Color(0xFF1A1040))
-                            )
-                        )
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(CardColor)
                         .padding(24.dp)
                 ) {
                     Column {
                         Text(
                             text = greeting,
-                            color = Color.White.copy(alpha = 0.6f),
+                            color = TextSecondary,
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            letterSpacing = 0.3.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Total Balance",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 14.sp,
                             fontWeight = FontWeight.Normal
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = totalBalance.toDisplayAmount(),
-                            color = Color.White,
-                            fontSize = 40.sp,
+                            color = TextPrimary,
+                            fontSize = 38.sp,
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.5).sp
+                            letterSpacing = (-1).sp
+                        )
+                        Text(
+                            text = "Total Balance",
+                            color = TextTertiary,
+                            fontSize = 12.sp
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Stat pills row
+                        HorizontalDivider(color = DividerColor, thickness = 1.dp)
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(24.dp)
                         ) {
-                            StatPill(
-                                label = "Income",
-                                value = income.toDisplayAmount(),
-                                color = IncomeColor,
-                                modifier = Modifier.weight(1f)
-                            )
-                            StatPill(
-                                label = "Spent",
-                                value = spent.toDisplayAmount(),
-                                color = ExpenseColor,
-                                modifier = Modifier.weight(1f)
-                            )
+                            Column {
+                                Text("Income", color = TextSecondary, fontSize = 11.sp)
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    income.toDisplayAmount(),
+                                    color = IncomeColor,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            Column {
+                                Text("Spent", color = TextSecondary, fontSize = 11.sp)
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    spent.toDisplayAmount(),
+                                    color = ExpenseColor,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
                 }

@@ -68,6 +68,8 @@ class CategoryRepositoryImpl(
 
     override suspend fun deleteCategory(id: String): Result<Unit> {
         return try {
+            // Null-out categoryId on all transactions referencing this category first
+            db.transactionDao().nullOutCategoryId(id)
             db.categoryDao().deleteCategory(id)
             Result.success(Unit)
         } catch (e: Exception) {

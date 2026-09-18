@@ -2,18 +2,27 @@ package com.example.bluff.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Background = Color(0xFF080808)
-val Surface = Color(0xFF111111)
-val SurfaceVariant = Color(0xFF1C1C1C)
-val CardColor = Color(0xFF141414)
-val Primary = Color(0xFF6C63FF)
-val IncomeColor = Color(0xFF00C896)
-val ExpenseColor = Color(0xFFFF4757)
-val TransferColor = Color(0xFF3A8EFF)
-val TextPrimary = Color(0xFFF2F2F2)
-val TextSecondary = Color(0xFF8A8A8A)
-val TextTertiary = Color(0xFF555555)
-val DividerColor = Color(0xFF222222)
-val SuccessColor = Color(0xFF00C896)
-val WarningColor = Color(0xFFFFB800)
-val ErrorColor = Color(0xFFFF4757)
+// ── Base surfaces ─────────────────────────────────────────────────────────────
+val Background    = Color(0xFF000000)
+val Surface       = Color(0xFF0A0A0A)
+val SurfaceVariant = Color(0xFF161616)
+val CardColor     = Color(0xFF0F0F0F)
+
+// ── Primary accent (white) ────────────────────────────────────────────────────
+val Primary       = Color(0xFFFFFFFF)
+
+// ── Text ──────────────────────────────────────────────────────────────────────
+val TextPrimary   = Color(0xFFFFFFFF)
+val TextSecondary = Color(0xFF888888)
+val TextTertiary  = Color(0xFF444444)
+
+// ── Borders & dividers ────────────────────────────────────────────────────────
+val DividerColor  = Color(0xFF1E1E1E)
+
+// ── Semantic colours (amounts, status only) ───────────────────────────────────
+val IncomeColor   = Color(0xFF00C896)
+val ExpenseColor  = Color(0xFFFF4757)
+val TransferColor = Color(0xFF888888)
+val WarningColor  = Color(0xFFFFB800)
+val SuccessColor  = Color(0xFF00C896)
+val ErrorColor    = Color(0xFFFF4757)

@@ -18,13 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.core.graphics.toColorInt
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,9 +60,7 @@ class AnalyticsViewModel(
     var selectedPeriod by mutableStateOf(AnalyticsPeriod.THIS_MONTH)
         private set
 
-    fun selectPeriod(period: AnalyticsPeriod) {
-        selectedPeriod = period
-    }
+    fun selectPeriod(period: AnalyticsPeriod) { selectedPeriod = period }
 
     fun getDateRange(period: AnalyticsPeriod): Pair<LocalDate, LocalDate> {
         val now = LocalDate.now()
@@ -84,8 +83,7 @@ class AnalyticsViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val container = AppContainer.instance
-                AnalyticsViewModel(container.getAnalyticsUseCase)
+                AnalyticsViewModel(AppContainer.instance.getAnalyticsUseCase)
             }
         }
     }
@@ -95,13 +93,13 @@ class AnalyticsViewModel(
 fun AnalyticsScreen() {
     val vm: AnalyticsViewModel = viewModel(factory = AnalyticsViewModel.Factory)
     val summary = vm.analyticsState(vm.selectedPeriod)
+    val hasData = summary.totalSpentMinor > 0 || summary.totalIncomeMinor > 0
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background),
-        contentPadding = PaddingValues(bottom = 100.dp)
+        modifier = Modifier.fillMaxSize().background(Background),
+        contentPadding = PaddingValues(bottom = 120.dp)
     ) {
+        // ── Title ────────────────────────────────────────────────────────
         item {
             Spacer(Modifier.height(48.dp))
             Text(
@@ -114,7 +112,7 @@ fun AnalyticsScreen() {
             Spacer(Modifier.height(16.dp))
         }
 
-        // Period selector
+        // ── Period pills ──────────────────────────────────────────────────
         item {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -123,16 +121,16 @@ fun AnalyticsScreen() {
                 items(AnalyticsPeriod.entries) { period ->
                     val selected = vm.selectedPeriod == period
                     Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = if (selected) Primary else CardColor,
+                        shape = RoundedCornerShape(50.dp),
+                        color = if (selected) Color.White else CardColor,
                         modifier = Modifier.clickable { vm.selectPeriod(period) }
                     ) {
                         Text(
                             period.label,
-                            color = if (selected) TextPrimary else TextSecondary,
-                            fontSize = 14.sp,
+                            color = if (selected) Color.Black else TextSecondary,
+                            fontSize = 13.sp,
                             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 9.dp)
                         )
                     }
                 }
@@ -140,89 +138,111 @@ fun AnalyticsScreen() {
             Spacer(Modifier.height(20.dp))
         }
 
-        // Summary cards
+        // ── 4 summary cards ───────────────────────────────────────────────
         item {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(horizontal = 20.dp)
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                SummaryCard(
-                    label = "Spent",
-                    amount = summary.totalSpentMinor,
-                    color = ExpenseColor,
-                    modifier = Modifier.weight(1f)
-                )
-                SummaryCard(
-                    label = "Income",
-                    amount = summary.totalIncomeMinor,
-                    color = IncomeColor,
-                    modifier = Modifier.weight(1f)
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    AnalyticsSummaryCard("Spent", summary.totalSpentMinor, ExpenseColor, Modifier.weight(1f))
+                    AnalyticsSummaryCard("Income", summary.totalIncomeMinor, IncomeColor, Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    AnalyticsSummaryCard(
+                        "Saved",
+                        summary.totalSavingsMinor,
+                        if (summary.totalSavingsMinor >= 0) IncomeColor else ExpenseColor,
+                        Modifier.weight(1f)
+                    )
+                    AnalyticsSummaryCard("Daily Avg", summary.averageDailySpendingMinor, TextPrimary, Modifier.weight(1f))
+                }
             }
-            Spacer(Modifier.height(12.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(horizontal = 20.dp)
-            ) {
-                SummaryCard(
-                    label = "Saved",
-                    amount = summary.totalSavingsMinor,
-                    color = if (summary.totalSavingsMinor >= 0) IncomeColor else ExpenseColor,
-                    modifier = Modifier.weight(1f)
-                )
-                SummaryCard(
-                    label = "Daily Avg",
-                    amount = summary.averageDailySpendingMinor,
-                    color = Primary,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(24.dp))
         }
 
-        // Empty state when no data exists
-        if (summary.totalSpentMinor == 0L && summary.totalIncomeMinor == 0L) {
+        // ── Empty state ───────────────────────────────────────────────────
+        if (!hasData) {
             item {
                 Box(
                     modifier = Modifier.fillMaxWidth().height(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("📊", fontSize = 48.sp)
-                        Spacer(Modifier.height(8.dp))
+                        Text("📊", fontSize = 52.sp)
+                        Spacer(Modifier.height(12.dp))
                         Text("No data for this period", color = TextSecondary, fontSize = 16.sp)
+                        Text("Add some transactions to see analytics", color = TextTertiary, fontSize = 13.sp)
                     }
                 }
             }
         }
 
-        // Donut chart + breakdown
+        // ── Donut chart ───────────────────────────────────────────────────
         if (summary.categoryBreakdown.isNotEmpty()) {
             item {
                 Surface(
-                    modifier = Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
                     color = CardColor
                 ) {
                     Column(Modifier.padding(20.dp)) {
-                        Text("Spending by Category", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                        Spacer(Modifier.height(16.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "Spending by Category",
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Spacer(Modifier.height(20.dp))
+
+                        // Centred donut
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             DonutChart(
                                 categories = summary.categoryBreakdown,
-                                modifier = Modifier.size(140.dp)
+                                modifier = Modifier.size(180.dp)
                             )
-                            Spacer(Modifier.width(16.dp))
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
-                                summary.categoryBreakdown.take(5).forEach { cat ->
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Box(Modifier.size(10.dp).clip(CircleShape).background(parseColor(cat.categoryColor)))
-                                        Text(cat.categoryName, color = TextSecondary, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                                        Text("${cat.percentage.toInt()}%", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                                    }
+                        }
+
+                        Spacer(Modifier.height(20.dp))
+
+                        // Legend below
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            summary.categoryBreakdown.take(6).forEach { cat ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        Modifier
+                                            .size(10.dp)
+                                            .clip(CircleShape)
+                                            .background(parseColor(cat.categoryColor))
+                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(
+                                        cat.categoryName,
+                                        color = TextSecondary,
+                                        fontSize = 13.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        "${cat.percentage.toInt()}%",
+                                        color = TextPrimary,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        cat.amountMinor.toDisplayAmount(),
+                                        color = ExpenseColor,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
                             }
                         }
@@ -232,31 +252,44 @@ fun AnalyticsScreen() {
             }
         }
 
-        // Insights
+        // ── Insights ──────────────────────────────────────────────────────
         if (summary.insights.isNotEmpty()) {
             item {
-                Text("Insights", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 20.dp))
+                Text(
+                    "Insights",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
                 Spacer(Modifier.height(12.dp))
             }
             items(summary.insights) { insight ->
-                val bgColor = when (insight.type) {
-                    InsightType.POSITIVE -> IncomeColor.copy(alpha = 0.1f)
-                    InsightType.WARNING -> WarningColor.copy(alpha = 0.1f)
-                    InsightType.INFO -> CardColor
-                }
-                val textColor = when (insight.type) {
-                    InsightType.POSITIVE -> IncomeColor
-                    InsightType.WARNING -> WarningColor
-                    InsightType.INFO -> TextSecondary
+                val (bgColor, accentColor) = when (insight.type) {
+                    InsightType.POSITIVE -> IncomeColor.copy(alpha = 0.08f) to IncomeColor
+                    InsightType.WARNING -> WarningColor.copy(alpha = 0.08f) to WarningColor
+                    InsightType.INFO -> SurfaceVariant to TextSecondary
                 }
                 Surface(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp).fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp, vertical = 5.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
                     color = bgColor
                 ) {
-                    Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(insight.icon, fontSize = 20.sp)
-                        Text(insight.message, color = textColor, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(insight.icon, fontSize = 24.sp)
+                        Text(
+                            insight.message,
+                            color = accentColor,
+                            fontSize = 14.sp,
+                            modifier = Modifier.weight(1f),
+                            lineHeight = 20.sp
+                        )
                     }
                 }
             }
@@ -265,16 +298,32 @@ fun AnalyticsScreen() {
 }
 
 @Composable
-private fun SummaryCard(label: String, amount: Long, color: Color, modifier: Modifier = Modifier) {
+private fun AnalyticsSummaryCard(
+    label: String,
+    amount: Long,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         color = CardColor
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(label, color = TextSecondary, fontSize = 12.sp)
-            Spacer(Modifier.height(4.dp))
-            Text(amount.toDisplayAmount(), color = color, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                label,
+                color = TextSecondary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 0.8.sp
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                amount.toDisplayAmount(),
+                color = color,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -284,9 +333,9 @@ private fun DonutChart(categories: List<CategorySpending>, modifier: Modifier = 
     val colors = categories.map { parseColor(it.categoryColor) }
     Canvas(modifier = modifier) {
         var startAngle = -90f
-        val stroke = 28f
-        val inset = stroke / 2f
-        val oval = Size(size.width - stroke, size.height - stroke)
+        val strokeWidth = 36f
+        val inset = strokeWidth / 2f
+        val oval = Size(size.width - strokeWidth, size.height - strokeWidth)
         val topLeft = Offset(inset, inset)
 
         categories.forEachIndexed { i, cat ->
@@ -294,21 +343,19 @@ private fun DonutChart(categories: List<CategorySpending>, modifier: Modifier = 
             drawArc(
                 color = colors.getOrElse(i) { Color.Gray },
                 startAngle = startAngle,
-                sweepAngle = sweep - 2f,
+                sweepAngle = sweep - 1.5f,
                 useCenter = false,
                 topLeft = topLeft,
                 size = oval,
-                style = Stroke(width = stroke)
+                style = Stroke(width = strokeWidth, cap = androidx.compose.ui.graphics.StrokeCap.Round)
             )
             startAngle += sweep
         }
     }
 }
 
-private fun parseColor(hex: String): Color {
-    return try {
-        Color(hex.toColorInt())
-    } catch (e: Exception) {
-        Color.Gray
-    }
+private fun parseColor(hex: String): Color = try {
+    Color(hex.toColorInt())
+} catch (e: Exception) {
+    Color.Gray
 }

@@ -11,7 +11,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bluff.theme.*
-
+import com.example.bluff.ui.components.BluffButton
+import com.example.bluff.ui.components.BluffChip
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CycleSetupSheet(
@@ -54,10 +55,10 @@ fun CycleSetupSheet(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 presets.take(4).forEach { days ->
-                    FilterChip(
+                    BluffChip(
                         selected = selectedDays == days,
                         onClick = { selectedDays = days },
-                        label = { Text("${days}d") }
+                        text = "${days}d"
                     )
                 }
             }
@@ -67,23 +68,21 @@ fun CycleSetupSheet(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 presets.drop(4).forEach { days ->
-                    FilterChip(
+                    BluffChip(
                         selected = selectedDays == days,
                         onClick = { selectedDays = days },
-                        label = { Text("${days}d") }
+                        text = "${days}d"
                     )
                 }
             }
             Spacer(Modifier.height(24.dp))
 
             // Confirm button
-            Button(
+            BluffButton(
                 onClick = { onConfirm(selectedDays) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
-            ) {
-                Text("Set Reminder", color = Color.White)
-            }
+                text = "Set Reminder"
+            )
             Spacer(Modifier.height(12.dp))
 
             // Skip button

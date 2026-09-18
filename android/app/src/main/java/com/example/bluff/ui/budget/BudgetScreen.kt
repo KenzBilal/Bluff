@@ -34,9 +34,12 @@ import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
 import com.example.bluff.domain.usecase.budget.UpsertBudgetUseCase
 import com.example.bluff.theme.Background
 import com.example.bluff.theme.CardColor
+import com.example.bluff.theme.ExpenseColor
+import com.example.bluff.theme.IncomeColor
 import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
+import com.example.bluff.theme.WarningColor
 import com.example.bluff.ui.categories.CategoriesViewModel
 import com.example.bluff.ui.util.toDisplayAmount
 import kotlinx.coroutines.launch
@@ -131,7 +134,8 @@ fun BudgetScreen(onBack: () -> Unit) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { editingBudget = null; showAddEdit = true },
-                containerColor = Primary
+                containerColor = Primary,
+                contentColor = androidx.compose.ui.graphics.Color.Black
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add budget")
             }
@@ -187,7 +191,7 @@ fun BudgetScreen(onBack: () -> Unit) {
                     showDeleteDialog = false
                     deletingBudget = null
                 }) {
-                    Text("Delete", color = androidx.compose.ui.graphics.Color.Red)
+                    Text("Delete", color = ExpenseColor)
                 }
             },
             dismissButton = {
@@ -214,7 +218,7 @@ private fun BudgetCard(budget: Budget, onClick: () -> Unit, onDelete: () -> Unit
             ) {
                 Text(budget.name, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 TextButton(onClick = onDelete, contentPadding = PaddingValues(0.dp)) {
-                    Text("Delete", color = androidx.compose.ui.graphics.Color.Red, fontSize = 12.sp)
+                    Text("Delete", color = ExpenseColor, fontSize = 12.sp)
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -242,7 +246,7 @@ private fun BudgetCard(budget: Budget, onClick: () -> Unit, onDelete: () -> Unit
                 LinearProgressIndicator(
                     progress = { (budget.percentUsed / 100f).coerceIn(0f, 1f) },
                     modifier = Modifier.fillMaxWidth().height(6.dp),
-                    color = if (budget.isOverBudget) androidx.compose.ui.graphics.Color.Red else Primary,
+                    color = if (budget.isOverBudget) ExpenseColor else Primary,
                     trackColor = CardColor,
                 )
                 Spacer(Modifier.height(4.dp))

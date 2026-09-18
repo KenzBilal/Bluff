@@ -82,7 +82,8 @@ fun CategoriesScreen(onBack: () -> Unit) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { editingCategory = null; showAddEdit = true },
-                containerColor = Primary
+                containerColor = Primary,
+                contentColor = androidx.compose.ui.graphics.Color.Black
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add category")
             }
@@ -102,7 +103,7 @@ fun CategoriesScreen(onBack: () -> Unit) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 80.dp),
+                            .fillParentMaxSize(0.7f),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -129,7 +130,7 @@ fun CategoriesScreen(onBack: () -> Unit) {
                             Spacer(Modifier.height(24.dp))
                             Button(
                                 onClick = { editingCategory = null; showAddEdit = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                                colors = ButtonDefaults.buttonColors(containerColor = Primary, contentColor = androidx.compose.ui.graphics.Color.Black)
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))

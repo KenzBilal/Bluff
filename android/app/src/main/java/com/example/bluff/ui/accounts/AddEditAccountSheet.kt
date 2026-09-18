@@ -6,11 +6,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,13 +38,30 @@ fun AddEditAccountSheet(
 ) {
     var name by remember { mutableStateOf(account?.name ?: "") }
     var type by remember { mutableStateOf(account?.type ?: AccountType.CASH) }
-    var initialBalance by remember { mutableStateOf(account?.initialBalanceMinor?.toString() ?: "0") }
+    var initialBalance by remember { mutableStateOf(account?.initialBalanceMinor?.let { (it / 100).toString() } ?: "0") }
+
+    LaunchedEffect(account) {
+        if (account == null) {
+            name = ""
+            type = AccountType.CASH
+            initialBalance = "0"
+        } else {
+            name = account.name
+            type = account.type
+            initialBalance = (account.initialBalanceMinor / 100).toString()
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = Background
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+        ) {
             Text(
                 text = if (account != null) "Edit Account" else "New Account",
                 color = TextPrimary,
@@ -101,7 +122,7 @@ fun AddEditAccountSheet(
                         onSave(
                             name,
                             type,
-                            initialBalance.toLongOrNull() ?: 0L,
+                            initialBalance.toLongOrNull()?.times(100L) ?: 0L,
                             account?.icon ?: "wallet",
                             account?.color ?: "#6C63FF"
                         )

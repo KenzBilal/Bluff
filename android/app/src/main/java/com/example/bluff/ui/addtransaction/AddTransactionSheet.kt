@@ -61,6 +61,10 @@ fun AddTransactionSheet(
     var savedCategoryName by remember { mutableStateOf("") }
     val defaultCycleDays by viewModel.defaultCycleDays.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.reset()
+    }
+
     LaunchedEffect(saveResult) {
         when (val result = saveResult) {
             is AddTransactionViewModel.SaveResult.Success -> {
@@ -95,6 +99,7 @@ fun AddTransactionSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 32.dp)

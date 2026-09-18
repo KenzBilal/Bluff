@@ -23,16 +23,20 @@ import com.example.bluff.domain.model.Debt
 import com.example.bluff.domain.model.DebtDirection
 import com.example.bluff.theme.*
 import com.example.bluff.ui.util.toDisplayAmount
+import kotlin.math.abs
+import com.example.bluff.theme.*
+import com.example.bluff.ui.util.toDisplayAmount
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun DebtScreen(
-    viewModel: DebtViewModel = viewModel(factory = DebtViewModel.Factory)
+    viewModel: DebtViewModel = viewModel(factory = DebtViewModel.Factory),
+    onNavigateToDetail: (String) -> Unit
 ) {
-    val theyOweMe by viewModel.theyOweMe.collectAsState()
-    val iOwe by viewModel.iOwe.collectAsState()
+    val theyOweMe by viewModel.theyOweMeNetDebts.collectAsState()
+    val iOwe by viewModel.iOweNetDebts.collectAsState()
     val totalTheyOweMe by viewModel.totalTheyOweMe.collectAsState()
     val totalIOwe by viewModel.totalIOwe.collectAsState()
 
@@ -79,11 +83,10 @@ fun DebtScreen(
                     item {
                         SectionHeader(title = "They Owe Me", count = theyOweMe.size)
                     }
-                    items(theyOweMe, key = { it.id }) { debt ->
-                        DebtCard(
-                            debt = debt,
-                            onMarkPaid = { viewModel.markPaid(debt.id) },
-                            onDelete = { viewModel.delete(debt.id) }
+                    items(theyOweMe, key = { it.contactName }) { netDebt ->
+                        NetDebtCard(
+                            netDebt = netDebt,
+                            onClick = { onNavigateToDetail(netDebt.contactName) }
                         )
                     }
                 }
@@ -93,11 +96,10 @@ fun DebtScreen(
                     item {
                         SectionHeader(title = "I Owe", count = iOwe.size)
                     }
-                    items(iOwe, key = { it.id }) { debt ->
-                        DebtCard(
-                            debt = debt,
-                            onMarkPaid = { viewModel.markPaid(debt.id) },
-                            onDelete = { viewModel.delete(debt.id) }
+                    items(iOwe, key = { it.contactName }) { netDebt ->
+                        NetDebtCard(
+                            netDebt = netDebt,
+                            onClick = { onNavigateToDetail(netDebt.contactName) }
                         )
                     }
                 }
@@ -194,22 +196,17 @@ private fun SectionHeader(title: String, count: Int) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DebtCard(
-    debt: Debt,
-    onMarkPaid: () -> Unit,
-    onDelete: () -> Unit
+private fun NetDebtCard(
+    netDebt: NetDebt,
+    onClick: () -> Unit
 ) {
-    val dateStr = remember(debt.createdAt) {
-        SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(debt.createdAt))
-    }
-    val isTheyOwe = debt.direction == DebtDirection.THEY_OWE
+    val isTheyOwe = netDebt.netBalanceMinor > 0
     val amountColor = if (isTheyOwe) IncomeColor else ExpenseColor
-
-    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = CardColor,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
@@ -226,7 +223,7 @@ private fun DebtCard(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = debt.contactName.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
+                        text = netDebt.contactName.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
                         color = Primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
@@ -238,77 +235,26 @@ private fun DebtCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = debt.contactName,
+                    text = netDebt.contactName,
                     color = TextPrimary,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp
-                )
-                if (!debt.note.isNullOrBlank()) {
-                    Text(text = debt.note, color = TextSecondary, fontSize = 12.sp)
-                }
-                Text(text = dateStr, color = TextTertiary, fontSize = 11.sp)
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = debt.amountMinor.toDisplayAmount(),
-                    color = amountColor,
-                    fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    // Mark paid
-                    IconButton(
-                        onClick = onMarkPaid,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(IncomeColor.copy(alpha = 0.1f))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Mark paid",
-                            tint = IncomeColor,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    // Delete
-                    IconButton(
-                        onClick = { showDeleteConfirm = true },
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(ExpenseColor.copy(alpha = 0.1f))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = ExpenseColor,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
+                Text(
+                    text = "${netDebt.debts.size} transactions",
+                    color = TextSecondary,
+                    fontSize = 12.sp
+                )
             }
-        }
-    }
 
-    if (showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            containerColor = CardColor,
-            title = { Text("Delete debt?", color = TextPrimary) },
-            text = { Text("This will permanently remove this debt record.", color = TextSecondary) },
-            confirmButton = {
-                TextButton(onClick = { showDeleteConfirm = false; onDelete() }) {
-                    Text("Delete", color = ExpenseColor)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel", color = TextSecondary)
-                }
-            }
-        )
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+                text = abs(netDebt.netBalanceMinor).toDisplayAmount(),
+                color = amountColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
     }
 }

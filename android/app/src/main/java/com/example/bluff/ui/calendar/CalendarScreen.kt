@@ -1,25 +1,33 @@
 package com.example.bluff.ui.calendar
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.theme.*
+import com.example.bluff.ui.components.BluffSectionHeader
+import com.example.bluff.ui.components.TransactionRow
 import com.example.bluff.ui.util.toDisplayAmount
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -35,114 +43,206 @@ fun CalendarScreen(
     val currentMonth by viewModel.currentMonth.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
     val transactionsForMonth by viewModel.transactionsForMonth.collectAsState()
+    val selectedDateTransactions by viewModel.transactionsForDay.collectAsState()
     val daysWithTransactions = viewModel.getDaysWithTransactions()
 
-    Column(
+    val totalIncome = transactionsForMonth
+        .filter { it.type == TransactionType.INCOME }.sumOf { it.amountMinor }
+    val totalExpense = transactionsForMonth
+        .filter { it.type == TransactionType.EXPENSE }.sumOf { it.amountMinor }
+    val net = totalIncome - totalExpense
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Background)
-            .padding(16.dp)
+            .background(Background),
+        contentPadding = PaddingValues(bottom = 120.dp)
     ) {
-        // Month header with navigation
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { viewModel.previousMonth() }) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Previous month",
-                    tint = TextPrimary
-                )
-            }
+        // ── Header ────────────────────────────────────────────────────────
+        item {
+            Spacer(Modifier.height(48.dp))
             Text(
-                text = "${currentMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${currentMonth.year}",
-                fontSize = 20.sp,
+                "Calendar",
+                color = TextPrimary,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                modifier = Modifier.padding(horizontal = 20.dp)
             )
-            IconButton(onClick = { viewModel.nextMonth() }) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Next month",
-                    tint = TextPrimary
-                )
-            }
+            Spacer(Modifier.height(16.dp))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // ── Month nav + grid ──────────────────────────────────────────────
+        item {
+            Surface(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                color = CardColor
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // Month navigation row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = { viewModel.previousMonth() },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(SurfaceVariant)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Previous month",
+                                tint = TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = currentMonth.month
+                                    .getDisplayName(TextStyle.FULL, Locale.getDefault()),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                            Text(
+                                text = currentMonth.year.toString(),
+                                fontSize = 13.sp,
+                                color = TextSecondary
+                            )
+                        }
+                        IconButton(
+                            onClick = { viewModel.nextMonth() },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(SurfaceVariant)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Next month",
+                                tint = TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
 
-        // Day of week headers
-        Row(modifier = Modifier.fillMaxWidth()) {
-            DayOfWeek.entries.forEach { dayOfWeek ->
-                Text(
-                    text = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                    color = TextSecondary,
-                    fontSize = 14.sp
-                )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Day of week header
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        DayOfWeek.entries.forEach { day ->
+                            Text(
+                                text = day.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center,
+                                color = TextSecondary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    CalendarGrid(
+                        yearMonth = currentMonth,
+                        selectedDate = selectedDate,
+                        daysWithTransactions = daysWithTransactions,
+                        onDateClick = { date ->
+                            viewModel.selectDate(date)
+                            onDateSelected(date)
+                        }
+                    )
+                }
             }
+            Spacer(Modifier.height(16.dp))
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Calendar grid
-        CalendarGrid(
-            yearMonth = currentMonth,
-            selectedDate = selectedDate,
-            daysWithTransactions = daysWithTransactions,
-            onDateClick = { date ->
-                viewModel.selectDate(date)
-                onDateSelected(date)
-            }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Monthly summary
-        val totalIncome = transactionsForMonth.filter { it.type == com.example.bluff.domain.model.TransactionType.INCOME }.sumOf { it.amountMinor }
-        val totalExpense = transactionsForMonth.filter { it.type == com.example.bluff.domain.model.TransactionType.EXPENSE }.sumOf { it.amountMinor }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = CardColor)
-        ) {
+        // ── Monthly summary strip ─────────────────────────────────────────
+        item {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .padding(horizontal = 20.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Income", color = TextSecondary, fontSize = 14.sp)
-                    Text(
-                        text = totalIncome.toDisplayAmount(),
-                        color = IncomeColor,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Expense", color = TextSecondary, fontSize = 14.sp)
-                    Text(
-                        text = totalExpense.toDisplayAmount(),
-                        color = ExpenseColor,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Net", color = TextSecondary, fontSize = 14.sp)
-                    Text(
-                        text = (totalIncome - totalExpense).toDisplayAmount(),
-                        color = if (totalIncome - totalExpense >= 0) IncomeColor else ExpenseColor,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                MonthlySummaryPill(
+                    label = "Income",
+                    amount = totalIncome,
+                    color = IncomeColor,
+                    modifier = Modifier.weight(1f)
+                )
+                MonthlySummaryPill(
+                    label = "Spent",
+                    amount = totalExpense,
+                    color = ExpenseColor,
+                    modifier = Modifier.weight(1f)
+                )
+                MonthlySummaryPill(
+                    label = "Net",
+                    amount = net,
+                    color = if (net >= 0) IncomeColor else ExpenseColor,
+                    modifier = Modifier.weight(1f)
+                )
             }
+            Spacer(Modifier.height(20.dp))
+        }
+
+        // ── Selected day transactions ──────────────────────────────────────
+        if (selectedDate != null && selectedDateTransactions.isNotEmpty()) {
+            item {
+                val dateLabel = selectedDate!!.let {
+                    "${it.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())}, " +
+                    "${it.dayOfMonth} ${it.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())}"
+                }
+                BluffSectionHeader(
+                    title = dateLabel,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            items(selectedDateTransactions) { tx ->
+                TransactionRow(
+                    transaction = tx,
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .padding(bottom = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthlySummaryPill(
+    label: String,
+    amount: Long,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = color.copy(alpha = 0.1f)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(label, color = color, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(2.dp))
+            Text(
+                amount.toDisplayAmount(),
+                color = color,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
         }
     }
 }
@@ -155,35 +255,38 @@ private fun CalendarGrid(
     onDateClick: (LocalDate) -> Unit
 ) {
     val firstDayOfMonth = yearMonth.atDay(1)
-    val lastDayOfMonth = yearMonth.atEndOfMonth()
-    val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value // 1 = Monday, 7 = Sunday
+    val lastDay = yearMonth.atEndOfMonth().dayOfMonth
+    val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value // Mon=1, Sun=7
+    val today = LocalDate.now()
 
     Column {
-        var currentDay = 1
-        val totalWeeks = ((firstDayOfWeek - 1 + lastDayOfMonth.dayOfMonth) / 7) + 1
-
+        val totalWeeks = ((firstDayOfWeek - 1 + lastDay) / 7) + 1
         for (week in 0 until totalWeeks) {
             Row(modifier = Modifier.fillMaxWidth()) {
-                for (dayOfWeek in 1..7) {
-                    val dayIndex = week * 7 + dayOfWeek - (firstDayOfWeek - 1)
-                    if (dayIndex in 1..lastDayOfMonth.dayOfMonth) {
+                for (dow in 1..7) {
+                    val dayIndex = week * 7 + dow - (firstDayOfWeek - 1)
+                    if (dayIndex in 1..lastDay) {
                         val date = yearMonth.atDay(dayIndex)
                         val isSelected = date == selectedDate
-                        val hasTransactions = dayIndex in daysWithTransactions
-                        val isToday = date == LocalDate.now()
+                        val isToday = date == today
+                        val hasTx = dayIndex in daysWithTransactions
+
+                        val bgColor by animateColorAsState(
+                            targetValue = when {
+                                isSelected -> Primary
+                                isToday -> Primary.copy(alpha = 0.2f)
+                                else -> Color.Transparent
+                            },
+                            animationSpec = spring(),
+                            label = "dayBg"
+                        )
 
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .aspectRatio(1f)
                                 .clip(CircleShape)
-                                .background(
-                                    when {
-                                        isSelected -> Primary
-                                        isToday -> SurfaceVariant
-                                        else -> Background
-                                    }
-                                )
+                                .background(bgColor)
                                 .clickable { onDateClick(date) },
                             contentAlignment = Alignment.Center
                         ) {
@@ -191,19 +294,19 @@ private fun CalendarGrid(
                                 Text(
                                     text = dayIndex.toString(),
                                     color = when {
-                                        isSelected -> TextPrimary
+                                        isSelected -> Color.Black
                                         isToday -> Primary
                                         else -> TextPrimary
                                     },
-                                    fontSize = 16.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Normal
                                 )
-                                if (hasTransactions) {
+                                if (hasTx) {
                                     Box(
                                         modifier = Modifier
                                             .size(4.dp)
                                             .clip(CircleShape)
-                                            .background(if (isSelected) TextPrimary else Primary)
+                                            .background(if (isSelected) Color.Black else Primary)
                                     )
                                 }
                             }

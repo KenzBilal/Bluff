@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.example.bluff.theme.*
 
 enum class IconCategory(val label: String, val icons: List<String>) {
-    ALL("All", allMaterialIcons),
+    ALL("All", emptyList()),
     MONEY("Money", listOf("payments", "account_balance", "savings", "credit_card", "attach_money", "monetization_on", "receipt", "wallet", "paid", "trending_up", "show_chart", "currency_exchange", "request_quote")),
     TRANSPORT("Transport", listOf("directions_car", "directions_bus", "flight", "train", "local_taxi", "bike_scooter", "directions_boat", "local_shipping", "gas_station", "ev_station", "parking", "traffic", "route", "map")),
     FOOD("Food", listOf("restaurant", "local_cafe", "local_bar", "bakery_dining", "lunch_dining", "dinner_dining", "icecream", "local_pizza", "ramen_dining", "liquor", "coffee", "egg_alt", "kebab_dining", "brunch_dining")),

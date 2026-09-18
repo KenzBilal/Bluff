@@ -6,10 +6,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,18 +40,43 @@ fun AddEditRecurringSheet(
     onSave: (name: String, amount: Long, type: TransactionType, accountId: String, categoryId: String?, frequency: RecurrenceFrequency, startDate: LocalDate) -> Unit
 ) {
     var name by remember { mutableStateOf(recurring?.name ?: "") }
-    var amount by remember { mutableStateOf(recurring?.amountMinor?.toString() ?: "") }
+    var amount by remember { mutableStateOf(recurring?.amountMinor?.let { (it / 100).toString() } ?: "") }
     var type by remember { mutableStateOf(recurring?.type ?: TransactionType.EXPENSE) }
     var accountId by remember { mutableStateOf(recurring?.accountId ?: accounts.firstOrNull()?.id ?: "") }
     var categoryId by remember { mutableStateOf(recurring?.categoryId) }
     var frequency by remember { mutableStateOf(recurring?.frequency ?: RecurrenceFrequency.MONTHLY) }
     var startDateStr by remember { mutableStateOf(recurring?.startDate?.toString() ?: LocalDate.now().toString()) }
 
+    LaunchedEffect(recurring) {
+        if (recurring == null) {
+            name = ""
+            amount = ""
+            type = TransactionType.EXPENSE
+            accountId = accounts.firstOrNull()?.id ?: ""
+            categoryId = null
+            frequency = RecurrenceFrequency.MONTHLY
+            startDateStr = LocalDate.now().toString()
+        } else {
+            name = recurring.name
+            amount = (recurring.amountMinor / 100).toString()
+            type = recurring.type
+            accountId = recurring.accountId
+            categoryId = recurring.categoryId
+            frequency = recurring.frequency
+            startDateStr = recurring.startDate.toString()
+        }
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = Background
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+        ) {
             Text(
                 text = if (recurring != null) "Edit Recurring" else "New Recurring",
                 color = TextPrimary,
@@ -91,7 +120,7 @@ fun AddEditRecurringSheet(
                 onClick = {
                     if (name.isNotBlank() && (amount.toLongOrNull() ?: 0L) > 0 && accountId.isNotBlank()) {
                         val startDate = try { LocalDate.parse(startDateStr) } catch (e: Exception) { LocalDate.now() }
-                        onSave(name, amount.toLongOrNull() ?: 0L, type, accountId, categoryId, frequency, startDate)
+                        onSave(name, amount.toLongOrNull()?.times(100L) ?: 0L, type, accountId, categoryId, frequency, startDate)
                         onDismiss()
                     }
                 }

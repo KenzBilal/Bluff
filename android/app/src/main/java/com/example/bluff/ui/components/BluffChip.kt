@@ -2,7 +2,6 @@ package com.example.bluff.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,8 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.DividerColor
-import com.example.bluff.theme.Primary
-import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 
 @Composable
@@ -37,32 +33,27 @@ fun BluffChip(
     modifier: Modifier = Modifier
 ) {
     val bgColor by animateColorAsState(
-        targetValue = if (selected) Primary else CardColor,
+        targetValue = if (selected) Color.White else CardColor,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "chipBg"
     )
     val textColor by animateColorAsState(
-        targetValue = if (selected) Color.White else TextSecondary,
+        targetValue = if (selected) Color.Black else TextSecondary,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "chipText"
-    )
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1.0f else 0.97f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = "chipScale"
     )
 
     Surface(
         onClick = onClick,
-        modifier = modifier.scale(scale),
-        shape = RoundedCornerShape(50.dp),
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
         color = bgColor,
         border = if (selected) null else BorderStroke(1.dp, DividerColor)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
                 text = text,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                 color = textColor,
                 fontSize = 13.sp,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
@@ -73,7 +64,7 @@ fun BluffChip(
     }
 }
 
-/** Segmented control — 3 equal options with a sliding indicator style */
+/** Segmented control — equal-width tabs */
 @Composable
 fun BluffSegmentedControl(
     options: List<String>,
@@ -83,12 +74,14 @@ fun BluffSegmentedControl(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(10.dp),
         color = CardColor,
         border = BorderStroke(1.dp, DividerColor)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             options.forEachIndexed { index, label ->

@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.Account
 import com.example.bluff.theme.Background
 import com.example.bluff.theme.CardColor
+import com.example.bluff.theme.ExpenseColor
 import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
@@ -65,7 +66,8 @@ fun AccountsScreen(onBack: () -> Unit, onNavigateToAccountDetail: (String) -> Un
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { editingAccount = null; showAddEdit = true },
-                containerColor = Primary
+                containerColor = Primary,
+                contentColor = androidx.compose.ui.graphics.Color.Black
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add account")
             }
@@ -116,7 +118,7 @@ fun AccountsScreen(onBack: () -> Unit, onNavigateToAccountDetail: (String) -> Un
                     showDeleteDialog = false
                     accountToDelete = null
                 }) {
-                    Text("Delete", color = Color.Red)
+                    Text("Delete", color = ExpenseColor)
                 }
             },
             dismissButton = {

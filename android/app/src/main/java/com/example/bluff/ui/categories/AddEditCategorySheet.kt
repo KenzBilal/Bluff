@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,6 +24,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +60,24 @@ fun AddEditCategorySheet(
     var showIconPicker by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(category) {
+        if (category == null) {
+            name = ""
+            type = CategoryType.EXPENSE
+            icon = "shopping_cart"
+            color = "#888888"
+            parentId = null
+            iconType = "material"
+        } else {
+            name = category.name
+            type = category.type
+            icon = category.icon
+            color = category.color
+            parentId = category.parentId
+            iconType = category.iconType
+        }
+    }
+
     val excludedIds = remember(category) {
         if (category == null) emptySet()
         else {
@@ -78,7 +100,12 @@ fun AddEditCategorySheet(
         onDismissRequest = onDismiss,
         containerColor = Background
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+        ) {
             Text(
                 text = if (category != null) "Edit Category" else "New Category",
                 color = TextPrimary,

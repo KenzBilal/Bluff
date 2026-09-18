@@ -138,6 +138,21 @@ class AddTransactionViewModel(
             addCycleUseCase(categoryId, name, amountMinor, cycleDays)
         }
     }
+
+    fun reset() {
+        _amountText.value = ""
+        _amount.value = 0L
+        _mode.value = EntryMode.EXPENSE
+        _note.value = ""
+        _selectedToAccountId.value = null
+        _selectedCategoryId.value = null
+        _debtDirection.value = DebtDirection.THEY_OWE
+        _debtContactName.value = ""
+        _transferContactName.value = ""
+        _saveResult.value = SaveResult.Idle
+        _defaultCycleDays.value = null
+    }
+
     fun setDebtDirection(dir: DebtDirection) { _debtDirection.value = dir }
     fun setDebtContact(name: String, phone: String) {
         _debtContactName.value = name

@@ -18,9 +18,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.app.ActivityManager
+import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import com.example.bluff.domain.model.AppSettings
 import com.example.bluff.theme.Background
+import com.example.bluff.theme.CardColor
 import com.example.bluff.theme.ExpenseColor
+import com.example.bluff.theme.Primary
 import com.example.bluff.theme.TextPrimary
 import com.example.bluff.theme.TextSecondary
 
@@ -29,6 +41,19 @@ import com.example.bluff.theme.TextSecondary
 fun SettingsScreen(onBack: () -> Unit) {
     val vm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
     val settings by vm.settings.collectAsStateWithLifecycle(initialValue = null)
+    val context = LocalContext.current
+
+    // Notification permission state (Android 13+)
+    var notifGranted by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            else true
+        )
+    }
+    val notifLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> notifGranted = granted }
 
     Scaffold(
         topBar = {
@@ -79,6 +104,27 @@ fun SettingsScreen(onBack: () -> Unit) {
                 // Notifications
                 item {
                     SectionHeader("Notifications")
+                    // Android 13+ permission status row
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notifGranted) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Primary.copy(alpha = 0.1f)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Notifications not allowed", color = Primary, fontSize = 14.sp)
+                                TextButton(onClick = {
+                                    notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }) {
+                                    Text("Allow", color = Primary, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
                     SettingSwitchItem("Budget Alerts", s.notificationsBudget) {
                         vm.updateSetting(s) { st -> st.copy(notificationsBudget = it) }
                     }
@@ -106,35 +152,6 @@ fun SettingsScreen(onBack: () -> Unit) {
                     Spacer(Modifier.height(24.dp))
                 }
 
-                // Danger Zone
-                item {
-                    SectionHeader("Danger Zone")
-                    var showClearDialog by remember { mutableStateOf(false) }
-                    SettingButtonItem("Clear All Data", "Delete all transactions, budgets, goals") {
-                        showClearDialog = true
-                    }
-                    if (showClearDialog) {
-                        AlertDialog(
-                            onDismissRequest = { showClearDialog = false },
-                            containerColor = com.example.bluff.theme.CardColor,
-                            title = { Text("Clear All Data", color = TextPrimary) },
-                            text = { Text("This will permanently delete all your transactions, budgets, goals, and recurring transactions. Categories and accounts will be kept. This cannot be undone.", color = TextSecondary) },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    showClearDialog = false
-                                    vm.clearAllData()
-                                }) {
-                                    Text("Delete Everything", color = ExpenseColor)
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showClearDialog = false }) {
-                                    Text("Cancel", color = TextSecondary)
-                                }
-                            }
-                        )
-                    }
-                }
             } ?: run {
                 item {
                     val defaultSettings = AppSettings(userId = "")
@@ -148,6 +165,38 @@ fun SettingsScreen(onBack: () -> Unit) {
                     SettingTextItem("Accent Color", defaultSettings.accentColor)
                     SettingTextItem("Layout Density", defaultSettings.layoutDensity)
                     SettingTextItem("Animation Intensity", defaultSettings.animationIntensity)
+                    Spacer(Modifier.height(24.dp))
+                }
+            }
+
+            // Danger Zone (always visible)
+            item {
+                SectionHeader("Danger Zone")
+                var showClearDialog by remember { mutableStateOf(false) }
+                SettingButtonItem("Factory Reset App", "Deletes ALL app data permanently (Categories, Accounts, Transactions)") {
+                    showClearDialog = true
+                }
+                if (showClearDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showClearDialog = false },
+                        containerColor = com.example.bluff.theme.CardColor,
+                        title = { Text("Factory Reset", color = TextPrimary) },
+                        text = { Text("This will permanently delete ALL data and restart the app. This cannot be undone.", color = TextSecondary) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showClearDialog = false
+                                val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                                am.clearApplicationUserData()
+                            }) {
+                                Text("Reset App", color = ExpenseColor)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showClearDialog = false }) {
+                                Text("Cancel", color = TextSecondary)
+                            }
+                        }
+                    )
                 }
             }
         }

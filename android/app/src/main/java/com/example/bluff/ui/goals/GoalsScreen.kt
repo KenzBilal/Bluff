@@ -123,7 +123,8 @@ fun GoalsScreen(onBack: () -> Unit) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { editingGoal = null; showAddEdit = true },
-                containerColor = Primary
+                containerColor = Primary,
+                contentColor = androidx.compose.ui.graphics.Color.Black
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add goal")
             }
