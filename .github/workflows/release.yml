@@ -34,6 +34,9 @@ jobs:
           VERSION_NAME=$(grep 'versionName =' android/app/build.gradle.kts | awk -F'"' '{print $2}')
           echo "VERSION=v$VERSION_NAME" >> $GITHUB_OUTPUT
 
+      - name: Rename APK
+        run: mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/Bluff.apk
+
       - name: Upload APK to Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
@@ -42,4 +45,4 @@ jobs:
           prerelease: false
           title: "Bluff ${{ steps.get_version.outputs.VERSION }}"
           files: |
-            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/release/Bluff.apk
