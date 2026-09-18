@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bluff - Master Your Money</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        appBackground: '#121212',
-                        appSurface: '#1E1E1E',
-                        appPrimary: '#6C63FF',
+                        appBackground: '#000000',
+                        appSurface: '#121212',
+                        appSurfaceHighlight: '#1E1E1E',
+                        appPrimary: '#FFFFFF',
                         appText: '#FFFFFF',
                         appTextSecondary: '#A0A0A0'
                     },
@@ -27,43 +28,82 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #121212;
+            background-color: #000000;
             color: #FFFFFF;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center bg-appBackground text-appText antialiased p-6">
+<body class="min-h-screen flex flex-col items-center justify-center bg-appBackground text-appText p-6 relative overflow-hidden">
+
+    <!-- Subtle background glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white opacity-[0.02] rounded-full blur-[120px] pointer-events-none"></div>
 
     <!-- Main Container -->
-    <main class="max-w-2xl w-full flex flex-col items-center text-center">
+    <main class="max-w-2xl w-full flex flex-col items-center text-center relative z-10">
         
-        <!-- Logo / Icon Placeholder -->
-        <div class="w-20 h-20 bg-appPrimary rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-appPrimary/20">
-            <span class="text-4xl font-bold text-white tracking-tighter">B</span>
+        <!-- App Logo (The exact B path) -->
+        <div class="w-24 h-24 bg-appSurfaceHighlight rounded-3xl flex items-center justify-center mb-8 shadow-2xl border border-white/5">
+            <svg viewBox="0 0 108 108" class="w-16 h-16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#FFFFFF" d="M 38 28 L 56 28 C 67.046 28 76 36.954 76 48 C 76 53.64 73.662 58.732 69.882 62.392 C 75.318 66.273 78.833 72.637 78.833 79.833 C 78.833 91.527 69.361 101 57.667 101 L 38 101 C 32.477 101 28 96.523 28 91 L 28 38 C 28 32.477 32.477 28 38 28 Z M 48 44 L 48 56 L 56 56 C 59.314 56 62 53.314 62 50 C 62 46.686 59.314 44 56 44 L 48 44 Z M 48 72 L 48 85 L 57.667 85 C 61.256 85 64.167 82.089 64.167 78.5 C 64.167 74.911 61.256 72 57.667 72 L 48 72 Z"/>
+            </svg>
         </div>
 
         <!-- Title -->
-        <h1 class="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Bluff</h1>
+        <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight mb-5 text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">
+            Bluff.
+        </h1>
         
         <!-- Subtitle -->
-        <p class="text-lg text-appTextSecondary mb-12 max-w-md mx-auto leading-relaxed">
-            Personal finance, elevated. Offline-first, private, and beautifully designed.
+        <p class="text-lg sm:text-xl text-appTextSecondary mb-12 max-w-lg mx-auto leading-relaxed font-medium">
+            Professional offline-first personal finance. Strict, private, and beautifully monochrome.
         </p>
 
         <!-- Download Button -->
         <a href="https://github.com/KenzBilal/Bluff/releases/latest/download/app-release.apk" 
-           class="w-full sm:w-auto bg-appPrimary hover:bg-opacity-90 text-white font-semibold text-lg px-10 py-4 rounded-full transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-appPrimary/20">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+           class="w-full sm:w-auto bg-white text-black hover:bg-gray-200 font-bold text-lg px-10 py-4 rounded-full transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-white/20 transform hover:-translate-y-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             Download APK
         </a>
         
-        <p class="mt-6 text-sm text-appTextSecondary">Android 8.0+ &middot; v1.2</p>
+        <p class="mt-6 text-sm text-appTextSecondary font-medium">Android 8.0+ &middot; Official Release v1.2</p>
         
+        <!-- Feature Highlights -->
+        <div class="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 w-full text-left border-t border-white/10 pt-10">
+            <div class="glass-btn p-5 rounded-2xl transition-all">
+                <svg class="w-6 h-6 text-white mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <h3 class="text-white font-semibold mb-1">Total Privacy</h3>
+                <p class="text-sm text-appTextSecondary">Zero trackers, zero cloud sync. Your financial data stays exclusively on your device.</p>
+            </div>
+            <div class="glass-btn p-5 rounded-2xl transition-all">
+                <svg class="w-6 h-6 text-white mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <h3 class="text-white font-semibold mb-1">Auto SMS Parsing</h3>
+                <p class="text-sm text-appTextSecondary">Automatically parses Kotak and SBI bank SMS alerts into transactions instantly.</p>
+            </div>
+            <div class="glass-btn p-5 rounded-2xl transition-all">
+                <svg class="w-6 h-6 text-white mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <h3 class="text-white font-semibold mb-1">Self-Updating</h3>
+                <p class="text-sm text-appTextSecondary">Checks for updates automatically on launch to keep you on the latest version.</p>
+            </div>
+        </div>
+
         <!-- Source Code Link -->
-        <div class="mt-20">
-            <a href="https://github.com/KenzBilal/Bluff" class="text-appTextSecondary hover:text-white transition-colors text-sm flex items-center gap-2">
+        <div class="mt-16">
+            <a href="https://github.com/KenzBilal/Bluff" class="text-appTextSecondary hover:text-white transition-colors text-sm flex items-center justify-center gap-2 font-medium">
                 <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                View on GitHub
+                Open Source on GitHub
             </a>
         </div>
     </main>
