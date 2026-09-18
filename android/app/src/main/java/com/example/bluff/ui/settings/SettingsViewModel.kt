@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
@@ -22,6 +23,7 @@ class SettingsViewModel(
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings?> = getSettingsUseCase()
+        .map { it ?: AppSettings(userId = "") }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun updateSetting(current: AppSettings, updater: (AppSettings) -> AppSettings) {
