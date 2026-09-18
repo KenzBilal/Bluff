@@ -118,25 +118,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     }
                 }
 
-                item {
-                    SettingsSection(title = "Security & Privacy") {
-                        SettingsSwitchRow(
-                            icon = Icons.Default.Dialpad,
-                            title = "Require PIN",
-                            subtitle = "App lock on startup",
-                            checked = s.pinEnabled,
-                            onCheckedChange = { vm.updateSetting(s) { st -> st.copy(pinEnabled = it) } }
-                        )
-                        HorizontalDivider(color = CardColor, modifier = Modifier.padding(horizontal = 16.dp))
-                        SettingsSwitchRow(
-                            icon = Icons.Default.Fingerprint,
-                            title = "Biometric Authentication",
-                            subtitle = "Use fingerprint or face unlock",
-                            checked = s.biometricEnabled,
-                            onCheckedChange = { vm.updateSetting(s) { st -> st.copy(biometricEnabled = it) } }
-                        )
-                    }
-                }
+
             } ?: run {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -294,7 +276,18 @@ private fun SettingsSwitchRow(
             Text(title, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Text(subtitle, color = TextSecondary, fontSize = 13.sp)
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Primary.copy(alpha = 0.5f),
+                checkedBorderColor = Color.Transparent,
+                uncheckedThumbColor = Color.Gray,
+                uncheckedTrackColor = Color(0xFF2C2C2C),
+                uncheckedBorderColor = Color.Transparent
+            )
+        )
     }
 }
 
