@@ -169,6 +169,74 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
 
+            // Updates
+            item {
+                SectionHeader("Updates")
+                val currentVersion = com.example.bluff.BuildConfig.VERSION_NAME
+                var isChecking by remember { mutableStateOf(false) }
+                var updateInfo by remember { mutableStateOf<com.example.bluff.data.repository.UpdateInfo?>(null) }
+                
+                Surface(
+                    onClick = {
+                        isChecking = true
+                        vm.checkForUpdates { result ->
+                            updateInfo = result
+                            isChecking = false
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = Primary.copy(alpha = 0.1f)
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column {
+                            Text("Check for Updates", color = Primary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                            Text("Current version: $currentVersion", color = TextSecondary, fontSize = 14.sp)
+                        }
+                        if (isChecking) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Primary, strokeWidth = 2.dp)
+                        }
+                    }
+                }
+
+                if (updateInfo != null) {
+                    AlertDialog(
+                        onDismissRequest = { updateInfo = null },
+                        containerColor = com.example.bluff.theme.CardColor,
+                        title = { Text(if (updateInfo!!.hasUpdate) "Update Available!" else "Up to date", color = TextPrimary) },
+                        text = { 
+                            Text(
+                                if (updateInfo!!.hasUpdate) "Version ${updateInfo!!.latestVersion} is available. Download and install now?" 
+                                else "You are already on the latest version ($currentVersion).",
+                                color = TextSecondary
+                            )
+                        },
+                        confirmButton = {
+                            if (updateInfo!!.hasUpdate && updateInfo!!.downloadUrl != null) {
+                                TextButton(onClick = {
+                                    vm.startUpdateDownload(updateInfo!!.downloadUrl!!)
+                                    updateInfo = null
+                                }) {
+                                    Text("Download", color = Primary)
+                                }
+                            } else {
+                                TextButton(onClick = { updateInfo = null }) {
+                                    Text("OK", color = Primary)
+                                }
+                            }
+                        },
+                        dismissButton = {
+                            if (updateInfo!!.hasUpdate) {
+                                TextButton(onClick = { updateInfo = null }) {
+                                    Text("Cancel", color = TextSecondary)
+                                }
+                            }
+                        }
+                    )
+                }
+                Spacer(Modifier.height(24.dp))
+            }
+
             // Danger Zone (always visible)
             item {
                 SectionHeader("Danger Zone")

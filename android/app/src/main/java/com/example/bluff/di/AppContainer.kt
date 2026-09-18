@@ -111,6 +111,7 @@ class AppContainer(context: Context) {
 
     // --- Utility ---
     val db get() = database
+    val appContext = context
 
     companion object {
         @Volatile

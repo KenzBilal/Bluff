@@ -17,7 +17,8 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val getSettingsUseCase: GetAppSettingsUseCase,
-    private val updateSettingsUseCase: UpdateAppSettingsUseCase
+    private val updateSettingsUseCase: UpdateAppSettingsUseCase,
+    private val updaterRepository: com.example.bluff.data.repository.UpdaterRepository
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings?> = getSettingsUseCase()
@@ -39,11 +40,26 @@ class SettingsViewModel(
         }
     }
 
+    fun checkForUpdates(onResult: (com.example.bluff.data.repository.UpdateInfo) -> Unit) {
+        viewModelScope.launch {
+            val result = updaterRepository.checkForUpdates()
+            onResult(result)
+        }
+    }
+
+    fun startUpdateDownload(url: String) {
+        updaterRepository.startDownload(url)
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = AppContainer.instance
-                SettingsViewModel(container.getAppSettingsUseCase, container.updateAppSettingsUseCase)
+                SettingsViewModel(
+                    container.getAppSettingsUseCase, 
+                    container.updateAppSettingsUseCase,
+                    com.example.bluff.data.repository.UpdaterRepository(container.appContext)
+                )
             }
         }
     }
