@@ -12,15 +12,25 @@ android {
         applicationId = "com.example.bluff"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
 
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("bluff.jks")
+            storePassword = "bluff123"
+            keyAlias = "bluff"
+            keyPassword = "bluff123"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
