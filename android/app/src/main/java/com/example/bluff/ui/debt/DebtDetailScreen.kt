@@ -1,5 +1,7 @@
 package com.example.bluff.ui.debt
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
@@ -35,7 +37,7 @@ fun DebtDetailScreen(
     onBack: () -> Unit,
     viewModel: DebtViewModel = viewModel(factory = DebtViewModel.Factory)
 ) {
-    val allDebts by viewModel.activeDebts.collectAsState()
+    val allDebts by viewModel.activeDebts.collectAsStateWithLifecycle()
     val contactDebts = remember(allDebts, contactName) {
         allDebts.filter { it.contactName == contactName }.sortedByDescending { it.createdAt }
     }

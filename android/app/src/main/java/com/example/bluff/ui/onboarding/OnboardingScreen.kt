@@ -1,5 +1,7 @@
 package com.example.bluff.ui.onboarding
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,8 +25,8 @@ fun OnboardingScreen(
     onComplete: () -> Unit,
     viewModel: OnboardingViewModel = viewModel(factory = OnboardingViewModel.Factory)
 ) {
-    val name by viewModel.name.collectAsState()
-    val phone by viewModel.phone.collectAsState()
+    val name by viewModel.name.collectAsStateWithLifecycle()
+    val phone by viewModel.phone.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier

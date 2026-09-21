@@ -1,5 +1,7 @@
 package com.example.bluff.ui.calendar
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -40,10 +42,10 @@ fun CalendarScreen(
     onDateSelected: (LocalDate) -> Unit,
     viewModel: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
 ) {
-    val currentMonth by viewModel.currentMonth.collectAsState()
-    val selectedDate by viewModel.selectedDate.collectAsState()
-    val transactionsForMonth by viewModel.transactionsForMonth.collectAsState()
-    val selectedDateTransactions by viewModel.transactionsForDay.collectAsState()
+    val currentMonth by viewModel.currentMonth.collectAsStateWithLifecycle()
+    val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
+    val transactionsForMonth by viewModel.transactionsForMonth.collectAsStateWithLifecycle()
+    val selectedDateTransactions by viewModel.transactionsForDay.collectAsStateWithLifecycle()
     val daysWithTransactions = viewModel.getDaysWithTransactions()
 
     val totalIncome = transactionsForMonth

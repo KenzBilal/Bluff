@@ -10,6 +10,8 @@ import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.Dispatchers
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -18,6 +20,7 @@ class GetAnalyticsUseCase(private val transactionRepository: TransactionReposito
     fun getForPeriod(startDate: LocalDate, endDate: LocalDate): Flow<AnalyticsSummary> {
         return transactionRepository.getTransactionsByDateRange(startDate, endDate)
             .map { transactions -> buildSummary(transactions, startDate, endDate) }
+            .flowOn(Dispatchers.Default)
     }
 
     private fun buildSummary(

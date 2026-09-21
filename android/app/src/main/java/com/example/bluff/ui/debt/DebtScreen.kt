@@ -1,5 +1,7 @@
 package com.example.bluff.ui.debt
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,10 +37,10 @@ fun DebtScreen(
     viewModel: DebtViewModel = viewModel(factory = DebtViewModel.Factory),
     onNavigateToDetail: (String) -> Unit
 ) {
-    val theyOweMe by viewModel.theyOweMeNetDebts.collectAsState()
-    val iOwe by viewModel.iOweNetDebts.collectAsState()
-    val totalTheyOweMe by viewModel.totalTheyOweMe.collectAsState()
-    val totalIOwe by viewModel.totalIOwe.collectAsState()
+    val theyOweMe by viewModel.theyOweMeNetDebts.collectAsStateWithLifecycle()
+    val iOwe by viewModel.iOweNetDebts.collectAsStateWithLifecycle()
+    val totalTheyOweMe by viewModel.totalTheyOweMe.collectAsStateWithLifecycle()
+    val totalIOwe by viewModel.totalIOwe.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize().background(Background)) {
         Column {

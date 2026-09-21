@@ -1,5 +1,7 @@
 package com.example.bluff.ui.home
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -37,15 +39,15 @@ fun HomeScreen(
     onNavigateToTransactionDetail: (String) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
 ) {
-    val greeting by viewModel.greeting.collectAsState()
-    val totalBalance by viewModel.totalBalance.collectAsState()
-    val income by viewModel.monthlyIncome.collectAsState()
-    val spent by viewModel.monthlySpent.collectAsState()
-    val recentTransactions by viewModel.recentTransactions.collectAsState()
-    val activeBudget by viewModel.activeBudget.collectAsState()
-    val topGoals by viewModel.topGoals.collectAsState()
-    val upcomingCycles by viewModel.upcomingCycles.collectAsState()
-    val dueRecurring by viewModel.dueRecurringTransactions.collectAsState()
+    val greeting by viewModel.greeting.collectAsStateWithLifecycle()
+    val totalBalance by viewModel.totalBalance.collectAsStateWithLifecycle()
+    val income by viewModel.monthlyIncome.collectAsStateWithLifecycle()
+    val spent by viewModel.monthlySpent.collectAsStateWithLifecycle()
+    val recentTransactions by viewModel.recentTransactions.collectAsStateWithLifecycle()
+    val activeBudget by viewModel.activeBudget.collectAsStateWithLifecycle()
+    val topGoals by viewModel.topGoals.collectAsStateWithLifecycle()
+    val upcomingCycles by viewModel.upcomingCycles.collectAsStateWithLifecycle()
+    val dueRecurring by viewModel.dueRecurringTransactions.collectAsStateWithLifecycle()
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }

@@ -1,5 +1,7 @@
 package com.example.bluff.ui.accounts
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,8 +37,8 @@ fun AccountDetailScreen(
     onBack: () -> Unit,
     viewModel: AccountDetailViewModel = viewModel(factory = AccountDetailViewModel.factory(accountId))
 ) {
-    val account by viewModel.account.collectAsState()
-    val transactions by viewModel.transactions.collectAsState()
+    val account by viewModel.account.collectAsStateWithLifecycle()
+    val transactions by viewModel.transactions.collectAsStateWithLifecycle()
 
     val parsedColor = try {
         Color(account?.color?.toColorInt() ?: Primary.toArgb())

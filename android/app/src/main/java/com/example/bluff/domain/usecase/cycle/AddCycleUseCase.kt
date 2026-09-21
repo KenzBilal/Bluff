@@ -13,6 +13,8 @@ class AddCycleUseCase(private val repository: ExpenseCycleRepository) {
         cycleDays: Int,
         transactionDate: LocalDate = LocalDate.now()
     ): ExpenseCycle {
+        if (amountMinor <= 0) throw IllegalArgumentException("Cycle amount must be positive")
+        
         val existing = repository.getByCategoryId(categoryId)
         if (existing != null) {
             val updated = existing.copy(

@@ -1,5 +1,7 @@
 package com.example.bluff.ui.addtransaction
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -35,22 +37,22 @@ fun AddTransactionSheet(
     onDismiss: () -> Unit,
     viewModel: AddTransactionViewModel = viewModel(factory = AddTransactionViewModel.Factory)
 ) {
-    val amount by viewModel.amount.collectAsState()
-    val amountText by viewModel.amountText.collectAsState()
-    val mode by viewModel.mode.collectAsState()
-    val note by viewModel.note.collectAsState()
-    val selectedAccountId by viewModel.selectedAccountId.collectAsState()
-    val selectedToAccountId by viewModel.selectedToAccountId.collectAsState()
-    val selectedCategoryId by viewModel.selectedCategoryId.collectAsState()
-    val accounts by viewModel.accounts.collectAsState()
-    val saveResult by viewModel.saveResult.collectAsState()
-    val categoryTree by viewModel.categoryTree.collectAsState()
-    val quickSuggestions by viewModel.quickSuggestions.collectAsState()
-    val monthlySpend by viewModel.monthlySpend.collectAsState()
-    val debtDirection by viewModel.debtDirection.collectAsState()
-    val debtContactName by viewModel.debtContactName.collectAsState()
-    val transferContactName by viewModel.transferContactName.collectAsState()
-    val dueRecurring by viewModel.dueRecurringTransactions.collectAsState()
+    val amount by viewModel.amount.collectAsStateWithLifecycle()
+    val amountText by viewModel.amountText.collectAsStateWithLifecycle()
+    val mode by viewModel.mode.collectAsStateWithLifecycle()
+    val note by viewModel.note.collectAsStateWithLifecycle()
+    val selectedAccountId by viewModel.selectedAccountId.collectAsStateWithLifecycle()
+    val selectedToAccountId by viewModel.selectedToAccountId.collectAsStateWithLifecycle()
+    val selectedCategoryId by viewModel.selectedCategoryId.collectAsStateWithLifecycle()
+    val accounts by viewModel.accounts.collectAsStateWithLifecycle()
+    val saveResult by viewModel.saveResult.collectAsStateWithLifecycle()
+    val categoryTree by viewModel.categoryTree.collectAsStateWithLifecycle()
+    val quickSuggestions by viewModel.quickSuggestions.collectAsStateWithLifecycle()
+    val monthlySpend by viewModel.monthlySpend.collectAsStateWithLifecycle()
+    val debtDirection by viewModel.debtDirection.collectAsStateWithLifecycle()
+    val debtContactName by viewModel.debtContactName.collectAsStateWithLifecycle()
+    val transferContactName by viewModel.transferContactName.collectAsStateWithLifecycle()
+    val dueRecurring by viewModel.dueRecurringTransactions.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     var showAccountPicker by remember { mutableStateOf(false) }
@@ -62,7 +64,7 @@ fun AddTransactionSheet(
     var savedCategoryId by remember { mutableStateOf<String?>(null) }
     var savedAmount by remember { mutableStateOf(0L) }
     var savedCategoryName by remember { mutableStateOf("") }
-    val defaultCycleDays by viewModel.defaultCycleDays.collectAsState()
+    val defaultCycleDays by viewModel.defaultCycleDays.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.reset()

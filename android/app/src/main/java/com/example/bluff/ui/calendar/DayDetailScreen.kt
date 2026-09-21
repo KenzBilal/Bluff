@@ -1,5 +1,7 @@
 package com.example.bluff.ui.calendar
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,8 +33,8 @@ fun DayDetailScreen(
     onBack: () -> Unit,
     viewModel: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
 ) {
-    val transactionsForDay by viewModel.transactionsForDay.collectAsState()
-    val dailySummary by viewModel.dailySummary.collectAsState()
+    val transactionsForDay by viewModel.transactionsForDay.collectAsStateWithLifecycle()
+    val dailySummary by viewModel.dailySummary.collectAsStateWithLifecycle()
 
     // Load transactions for this date
     viewModel.selectDate(date)
