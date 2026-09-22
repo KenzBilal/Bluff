@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.theme.*
+import com.example.bluff.ui.components.TransactionRow
 import com.example.bluff.ui.util.toDisplayAmount
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -140,63 +141,14 @@ fun AccountDetailScreen(
                 }
             } else {
                 items(transactions) { transaction ->
-                    AccountTransactionItem(transaction)
+                    TransactionRow(
+                        transaction = transaction,
+                        onClick = { /* Navigate to detail */ },
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                 }
             }
         }
     }
 }
 
-@Composable
-private fun AccountTransactionItem(transaction: Transaction) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = CardColor),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = transaction.categoryIcon ?: "📦",
-                fontSize = 24.sp
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = transaction.categoryName ?: "Uncategorized",
-                    color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                if (!transaction.note.isNullOrBlank()) {
-                    Text(
-                        text = transaction.note,
-                        color = TextSecondary,
-                        fontSize = 14.sp
-                    )
-                }
-                Text(
-                    text = transaction.transactionDate.format(DateTimeFormatter.ofPattern("dd MMM", Locale.getDefault())),
-                    color = TextSecondary,
-                    fontSize = 12.sp
-                )
-            }
-            Text(
-                text = transaction.amountMinor.toDisplayAmount(),
-                color = when (transaction.type) {
-                    TransactionType.EXPENSE -> ExpenseColor
-                    TransactionType.INCOME -> IncomeColor
-                    TransactionType.TRANSFER -> TransferColor
-                },
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}

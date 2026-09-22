@@ -234,7 +234,8 @@ fun TransactionDetailScreen(
                             val fmt = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.getDefault())
                             DetailRow("Date", tx.transactionDate.format(fmt))
                             HorizontalDivider(color = DividerColor.copy(alpha = 0.5f), modifier = Modifier.padding(vertical = 8.dp))
-                            DetailRow("Category", tx.categoryName ?: "Uncategorized")
+                            val defaultCat = if (tx.type == TransactionType.TRANSFER) "Transfer" else "Uncategorized"
+                            DetailRow("Category", tx.categoryName ?: tx.note ?: defaultCat)
                             if (!tx.note.isNullOrBlank()) {
                                 HorizontalDivider(color = DividerColor.copy(alpha = 0.5f), modifier = Modifier.padding(vertical = 8.dp))
                                 DetailRow("Note", tx.note)

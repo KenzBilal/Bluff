@@ -6,7 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -140,14 +142,15 @@ fun SplitBillSheet(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BluffSectionHeader(title = "Participants", modifier = Modifier)
-                        TextButton(onClick = { showContactPicker = true }) {
-                            Text("+ Add Contact", color = Primary)
-                        }
+                        Text(
+                            text = "Participants",
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
                     }
                 }
 
@@ -205,6 +208,23 @@ fun SplitBillSheet(
                                 Spacer(modifier = Modifier.width(48.dp))
                             }
                         }
+                    }
+                }
+
+                item {
+                    OutlinedButton(
+                        onClick = { showContactPicker = true },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Primary.copy(alpha = 0.5f))
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Add,
+                            contentDescription = "Add Participant",
+                            tint = Primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Add Participant", color = Primary, fontWeight = FontWeight.Bold)
                     }
                 }
 

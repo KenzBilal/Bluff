@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -197,6 +198,46 @@ fun ContactPickerContent(
                     LazyColumn(
                         modifier = Modifier.heightIn(max = 400.dp)
                     ) {
+                        if (query.isNotBlank()) {
+                            item {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { 
+                                            onContactSelected(PhoneContact(name = query.trim(), phone = ""))
+                                            onDismiss() 
+                                        }
+                                        .padding(vertical = 12.dp, horizontal = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Add custom",
+                                        tint = Primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = "Add \"${query.trim()}\"",
+                                        color = Primary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp
+                                    )
+                                }
+                                HorizontalDivider(color = DividerColor, thickness = 0.5.dp)
+                            }
+                        }
+
+                        if (filtered.isEmpty() && query.isNotBlank()) {
+                            item {
+                                Text(
+                                    text = "No contacts match \"$query\"",
+                                    color = TextSecondary,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                        }
+
                         items(filtered) { contact ->
                             Row(
                                 modifier = Modifier

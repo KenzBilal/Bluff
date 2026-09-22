@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluff.domain.model.Transaction
 import com.example.bluff.domain.model.TransactionType
 import com.example.bluff.theme.*
+import com.example.bluff.ui.components.TransactionRow
 import com.example.bluff.ui.util.toDisplayAmount
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -82,7 +83,10 @@ fun DayDetailScreen(
                     SectionHeader("Expenses (${expenses.size})")
                 }
                 items(expenses) { transaction ->
-                    TransactionItem(transaction)
+                    TransactionRow(
+                        transaction = transaction,
+                        onClick = { /* Could navigate to detail */ }
+                    )
                 }
                 item { Spacer(modifier = Modifier.height(16.dp)) }
             }
@@ -94,7 +98,10 @@ fun DayDetailScreen(
                     SectionHeader("Income (${income.size})")
                 }
                 items(income) { transaction ->
-                    TransactionItem(transaction)
+                    TransactionRow(
+                        transaction = transaction,
+                        onClick = { /* Could navigate to detail */ }
+                    )
                 }
                 item { Spacer(modifier = Modifier.height(16.dp)) }
             }
@@ -106,7 +113,10 @@ fun DayDetailScreen(
                     SectionHeader("Transfers (${transfers.size})")
                 }
                 items(transfers) { transaction ->
-                    TransactionItem(transaction)
+                    TransactionRow(
+                        transaction = transaction,
+                        onClick = { /* Could navigate to detail */ }
+                    )
                 }
             }
 
@@ -187,54 +197,3 @@ private fun SectionHeader(title: String) {
     )
 }
 
-@Composable
-private fun TransactionItem(transaction: Transaction) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = CardColor),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Category icon
-            Text(
-                text = transaction.categoryIcon ?: "📦",
-                fontSize = 24.sp
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            // Category name and note
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = transaction.categoryName ?: "Uncategorized",
-                    color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                if (!transaction.note.isNullOrBlank()) {
-                    Text(
-                        text = transaction.note,
-                        color = TextSecondary,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-            // Amount
-            Text(
-                text = transaction.amountMinor.toDisplayAmount(),
-                color = when (transaction.type) {
-                    TransactionType.EXPENSE -> ExpenseColor
-                    TransactionType.INCOME -> IncomeColor
-                    TransactionType.TRANSFER -> TransferColor
-                },
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
