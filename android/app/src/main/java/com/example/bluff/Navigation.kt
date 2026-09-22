@@ -76,6 +76,7 @@ import com.example.bluff.ui.more.MoreScreen
 import com.example.bluff.ui.onboarding.OnboardingScreen
 import com.example.bluff.ui.recurring.RecurringScreen
 import com.example.bluff.ui.settings.SettingsScreen
+import com.example.bluff.ui.transactions.TransactionDetailScreen
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
@@ -159,7 +160,7 @@ private fun BluffMainApp() {
                     (slideInHorizontally(tween(300)) { -it / 3 } + fadeIn(tween(300))) togetherWith (slideOutHorizontally(tween(300)) { it / 3 } + fadeOut(tween(300)))
                 },
                 entryProvider = entryProvider {
-                    entry<HomeKey> { HomeScreen(onNavigateToTransactionDetail = {}) }
+                    entry<HomeKey> { HomeScreen(onNavigateToTransactionDetail = { txId -> backStack.add(TransactionDetailKey(txId)) }) }
                     entry<CalendarKey> {
                         CalendarScreen(
                             onDateSelected = { date ->
@@ -170,6 +171,12 @@ private fun BluffMainApp() {
                     entry<DayDetailKey> { key ->
                         DayDetailScreen(
                             date = LocalDate.parse(key.date),
+                            onBack = { backStack.removeLastOrNull() }
+                        )
+                    }
+                    entry<TransactionDetailKey> { key ->
+                        TransactionDetailScreen(
+                            transactionId = key.transactionId,
                             onBack = { backStack.removeLastOrNull() }
                         )
                     }

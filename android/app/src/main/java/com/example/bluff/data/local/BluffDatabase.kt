@@ -23,9 +23,11 @@ import com.example.bluff.data.local.entity.*
         AppSettingsEntity::class,
         DebtEntity::class,
         ExpenseCycleEntity::class,
-        CategoryCycleDefaultEntity::class
+        CategoryCycleDefaultEntity::class,
+        SplitBillEntity::class,
+        SplitParticipantEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -41,6 +43,7 @@ abstract class BluffDatabase : RoomDatabase() {
     abstract fun debtDao(): DebtDao
     abstract fun expenseCycleDao(): ExpenseCycleDao
     abstract fun categoryCycleDefaultDao(): CategoryCycleDefaultDao
+    abstract fun splitBillDao(): SplitBillDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -116,12 +119,43 @@ abstract class BluffDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS split_bills (
+                        id TEXT PRIMARY KEY NOT NULL,
+                        transactionId TEXT NOT NULL,
+                        totalAmountMinor INTEGER NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        FOREIGN KEY(transactionId) REFERENCES transactions(id) ON DELETE CASCADE
+                    )
+                """)
+                db.execSQL("CREATE UNIQUE INDEX index_split_bills_transactionId ON split_bills(transactionId)")
+                
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS split_participants (
+                        id TEXT PRIMARY KEY NOT NULL,
+                        splitBillId TEXT NOT NULL,
+                        contactName TEXT NOT NULL,
+                        contactPhone TEXT,
+                        amountMinor INTEGER NOT NULL,
+                        isPaid INTEGER NOT NULL DEFAULT 0,
+                        FOREIGN KEY(splitBillId) REFERENCES split_bills(id) ON DELETE CASCADE
+                    )
+                """)
+                db.execSQL("CREATE INDEX index_split_participants_splitBillId ON split_participants(splitBillId)")
+            }
+        }
+
         fun create(context: Context): BluffDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 BluffDatabase::class.java,
                 "bluff_db"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).build()
+            ).addMigrations(
+                MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, 
+                MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8
+            ).build()
         }
     }
 }

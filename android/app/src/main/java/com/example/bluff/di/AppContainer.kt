@@ -111,6 +111,14 @@ class AppContainer(context: Context) {
     val markCyclePaidUseCase = MarkCyclePaidUseCase(expenseCycleRepository)
     val deactivateCycleUseCase = DeactivateCycleUseCase(expenseCycleRepository)
 
+    val splitBillRepository = com.example.bluff.data.repository.SplitBillRepositoryImpl(database)
+    val markSplitParticipantPaidUseCase = com.example.bluff.domain.usecase.split.MarkSplitParticipantPaidUseCase(
+        splitBillRepository,
+        addTransactionUseCase,
+        database,
+        context
+    )
+
     // --- Utility ---
     val db get() = database
     val appContext = context

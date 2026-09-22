@@ -41,17 +41,39 @@ fun DebtScreen(
     val iOwe by viewModel.iOweNetDebts.collectAsStateWithLifecycle()
     val totalTheyOweMe by viewModel.totalTheyOweMe.collectAsStateWithLifecycle()
     val totalIOwe by viewModel.totalIOwe.collectAsStateWithLifecycle()
+    
+    var showSplitBillSheet by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize().background(Background)) {
         Column {
             Spacer(Modifier.height(48.dp))
-            Text(
-                "Debts",
-                color = TextPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Debts",
+                    color = TextPrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Primary.copy(alpha = 0.15f),
+                    onClick = { showSplitBillSheet = true }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("➗ Split Bill", color = Primary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    }
+                }
+            }
             Spacer(Modifier.height(16.dp))
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -137,6 +159,10 @@ fun DebtScreen(
                 }
             }
         }
+    }
+    
+    if (showSplitBillSheet) {
+        com.example.bluff.ui.split.SplitBillSheet(onDismiss = { showSplitBillSheet = false })
     }
 }
 
