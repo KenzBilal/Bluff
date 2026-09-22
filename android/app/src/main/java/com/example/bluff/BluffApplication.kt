@@ -40,17 +40,20 @@ class BluffApplication : Application(), Configuration.Provider {
         AppContainer.init(this)
 
         CoroutineScope(Dispatchers.IO).launch {
-            val defaults = listOf(
-                CategoryCycleDefaultEntity("cat_haircut", "Haircut", 30),
-                CategoryCycleDefaultEntity("cat_shaving", "Shaving", 15),
-                CategoryCycleDefaultEntity("cat_car_service", "Car Service", 180),
-                CategoryCycleDefaultEntity("cat_insurance", "Insurance", 365),
-                CategoryCycleDefaultEntity("cat_electricity", "Electricity", 30),
-                CategoryCycleDefaultEntity("cat_gas_cylinder", "Gas Cylinder", 60),
-                CategoryCycleDefaultEntity("cat_internet", "Internet", 30),
-                CategoryCycleDefaultEntity("cat_mobile_recharge", "Mobile Recharge", 28)
-            )
-            AppContainer.instance.db.categoryCycleDefaultDao().insertAll(defaults)
+            val dao = AppContainer.instance.db.categoryCycleDefaultDao()
+            if (dao.getCount() == 0) { // Only seed once
+                val defaults = listOf(
+                    CategoryCycleDefaultEntity("cat_haircut", "Haircut", 30),
+                    CategoryCycleDefaultEntity("cat_shaving", "Shaving", 15),
+                    CategoryCycleDefaultEntity("cat_car_service", "Car Service", 180),
+                    CategoryCycleDefaultEntity("cat_insurance", "Insurance", 365),
+                    CategoryCycleDefaultEntity("cat_electricity", "Electricity", 30),
+                    CategoryCycleDefaultEntity("cat_gas_cylinder", "Gas Cylinder", 60),
+                    CategoryCycleDefaultEntity("cat_internet", "Internet", 30),
+                    CategoryCycleDefaultEntity("cat_mobile_recharge", "Mobile Recharge", 28)
+                )
+                dao.insertAll(defaults)
+            }
         }
 
         val cycleReminderWorkRequest = PeriodicWorkRequestBuilder<CycleReminderWorker>(

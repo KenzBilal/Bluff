@@ -39,4 +39,7 @@ interface RecurringTransactionDao {
 
     @Query("UPDATE recurring_transactions SET isActive = 0 WHERE id = :id")
     suspend fun deactivate(id: String)
+
+    @Query("UPDATE recurring_transactions SET isActive = 0 WHERE accountId = :accountId")
+    suspend fun deactivateByAccountId(accountId: String)
 }

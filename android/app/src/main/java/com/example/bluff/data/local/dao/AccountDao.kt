@@ -56,6 +56,19 @@ interface AccountDao {
 
     @Query("""
         SELECT 
+            a.initialBalance + 
+            COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END), 0) -
+            COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) +
+            COALESCE(SUM(CASE WHEN t.type = 'TRANSFER' AND t.toAccountId = :id THEN t.amount ELSE 0 END), 0) -
+            COALESCE(SUM(CASE WHEN t.type = 'TRANSFER' AND t.accountId = :id THEN t.amount ELSE 0 END), 0)
+        FROM accounts a
+        LEFT JOIN transactions t ON t.accountId = a.id OR t.toAccountId = a.id
+        WHERE a.id = :id
+    """)
+    suspend fun getAccountBalanceSync(id: String): Long
+
+    @Query("""
+        SELECT 
             SUM(a.initialBalance) +
             COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END), 0) -
             COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0)

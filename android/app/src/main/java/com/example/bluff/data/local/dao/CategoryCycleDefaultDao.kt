@@ -13,4 +13,7 @@ interface CategoryCycleDefaultDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(defaults: List<CategoryCycleDefaultEntity>)
+
+    @Query("SELECT COUNT(*) FROM category_cycle_defaults")
+    suspend fun getCount(): Int
 }

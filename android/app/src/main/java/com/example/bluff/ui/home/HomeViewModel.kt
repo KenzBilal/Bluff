@@ -14,6 +14,7 @@ import com.example.bluff.domain.usecase.account.GetAccountsUseCase
 import com.example.bluff.domain.usecase.budget.GetBudgetsUseCase
 import com.example.bluff.domain.usecase.goal.GetGoalsUseCase
 import com.example.bluff.domain.model.ExpenseCycle
+import com.example.bluff.data.preferences.UserPreferencesManager
 import com.example.bluff.domain.usecase.cycle.GetCyclesUseCase
 import com.example.bluff.domain.usecase.recurring.GetRecurringTransactionsUseCase
 import com.example.bluff.domain.usecase.recurring.PayRecurringTransactionUseCase
@@ -37,7 +38,8 @@ class HomeViewModel(
     private val getGoalsUseCase: GetGoalsUseCase,
     private val getCyclesUseCase: GetCyclesUseCase,
     private val getRecurringTransactionsUseCase: GetRecurringTransactionsUseCase,
-    private val payRecurringTransactionUseCase: PayRecurringTransactionUseCase
+    private val payRecurringTransactionUseCase: PayRecurringTransactionUseCase,
+    private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
 
     private val now = LocalDate.now()
@@ -79,6 +81,12 @@ class HomeViewModel(
 
     private val _dismissedRecurringIds = MutableStateFlow<Set<String>>(emptySet())
 
+    init {
+        // Load persisted dismissed IDs (scoped to today's date)
+        _dismissedRecurringIds.value = userPreferencesManager.getDismissedRecurringIds()
+        updateGreeting()
+    }
+
     val dueRecurringTransactions: StateFlow<List<RecurringTransaction>> = getRecurringTransactionsUseCase.getActive()
         .map { recurring -> 
             val dismissed = _dismissedRecurringIds.value
@@ -88,16 +96,13 @@ class HomeViewModel(
 
     fun dismissRecurring(id: String) {
         _dismissedRecurringIds.value = _dismissedRecurringIds.value + id
+        userPreferencesManager.addDismissedRecurringId(id) // persist across recompositions
     }
 
     fun payRecurring(recurring: RecurringTransaction) {
         viewModelScope.launch {
             payRecurringTransactionUseCase(recurring)
         }
-    }
-
-    init {
-        updateGreeting()
     }
 
     private fun updateGreeting() {
@@ -120,7 +125,8 @@ class HomeViewModel(
                     container.getGoalsUseCase,
                     container.getCyclesUseCase,
                     container.getRecurringTransactionsUseCase,
-                    container.payRecurringTransactionUseCase
+                    container.payRecurringTransactionUseCase,
+                    container.userPreferencesManager
                 )
             }
         }

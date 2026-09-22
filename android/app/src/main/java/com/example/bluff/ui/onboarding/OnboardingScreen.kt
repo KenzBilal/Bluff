@@ -93,10 +93,7 @@ fun OnboardingScreen(
 
         BluffButton(
             text = "Continue",
-            onClick = {
-                viewModel.saveProfile()
-                onComplete()
-            },
+            onClick = { viewModel.saveAndComplete(onComplete) },
             enabled = name.isNotBlank()
         )
 

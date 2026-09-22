@@ -32,4 +32,25 @@ class UserPreferencesManager(private val context: Context) {
     fun getUserIdBlocking(): String {
         return sharedPreferences.getString("user_id", "") ?: ""
     }
+
+    /**
+     * Persist "Later" dismissed recurring IDs scoped to today's date.
+     * Reading on a new day returns empty set → popup shows again on fresh launch.
+     */
+    fun getDismissedRecurringIds(): Set<String> {
+        val today = java.time.LocalDate.now().toString()
+        val savedDate = sharedPreferences.getString("dismissed_recurring_date", null)
+        if (savedDate != today) return emptySet() // New day → reset
+        return sharedPreferences.getStringSet("dismissed_recurring_ids", emptySet()) ?: emptySet()
+    }
+
+    fun addDismissedRecurringId(id: String) {
+        val today = java.time.LocalDate.now().toString()
+        val current = getDismissedRecurringIds().toMutableSet()
+        current.add(id)
+        sharedPreferences.edit()
+            .putString("dismissed_recurring_date", today)
+            .putStringSet("dismissed_recurring_ids", current)
+            .apply()
+    }
 }

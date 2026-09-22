@@ -195,8 +195,9 @@ class CategoryRepositoryImpl(
     }
 
     override suspend fun getMonthlySpendByCategory(): Map<String, Long> {
-        val startOfMonth = java.time.LocalDate.now().withDayOfMonth(1).toString()
-        val endOfMonth = java.time.LocalDate.now().withDayOfMonth(1).plusMonths(1).toString()
+        val today = java.time.LocalDate.now()
+        val startOfMonth = today.withDayOfMonth(1).toString()
+        val endOfMonth = today.withDayOfMonth(today.lengthOfMonth()).toString() // last day of THIS month
         return db.categoryDao().getMonthlySpendByCategory(startOfMonth, endOfMonth)
             .associate { it.id to it.total }
     }

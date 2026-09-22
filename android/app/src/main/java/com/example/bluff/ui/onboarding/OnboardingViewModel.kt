@@ -28,10 +28,10 @@ class OnboardingViewModel(
         _phone.value = newPhone
     }
 
-    fun saveProfile() {
+    fun saveAndComplete(onComplete: () -> Unit) {
         viewModelScope.launch {
-            // Save logic using userPreferencesManager
             appContainer.userPreferencesManager.setOnboardingComplete(true)
+            onComplete()
         }
     }
 

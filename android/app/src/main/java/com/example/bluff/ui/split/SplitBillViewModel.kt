@@ -109,17 +109,36 @@ class SplitBillViewModel(
     }
 
     private fun recalculateEqualSplit(textAmount: String) {
-        val amt = textAmount.toLongOrNull()?.times(100) ?: 0L
+        val amt = (textAmount.toLongOrNull() ?: 0L) * 100L
         val parts = _participants.value
         if (parts.isEmpty()) return
-        
+
         val equalShare = amt / parts.size
-        // Give remainder to "Me"
-        val remainder = amt % parts.size
-        
-        _participants.value = parts.map {
-            if (it.isMe) it.copy(amountMinor = equalShare + remainder)
-            else it.copy(amountMinor = equalShare)
+        val remainder = (amt % parts.size).toInt() // in paise, max = participants-1
+
+        // Distribute remainder 1 paisa at a time to first N participants (not Me)
+        val friends = parts.filter { !it.isMe }
+        val me = parts.firstOrNull { it.isMe }
+
+        var remainderLeft = remainder
+        val updated = parts.map { p ->
+            when {
+                p.isMe -> p.copy(amountMinor = equalShare)
+                remainderLeft > 0 -> {
+                    remainderLeft--
+                    p.copy(amountMinor = equalShare + 1L)
+                }
+                else -> p.copy(amountMinor = equalShare)
+            }
+        }
+
+        // If no friends to absorb remainder, give it to Me
+        if (remainder > 0 && friends.isEmpty() && me != null) {
+            _participants.value = updated.map {
+                if (it.isMe) it.copy(amountMinor = equalShare + remainder) else it
+            }
+        } else {
+            _participants.value = updated
         }
     }
 

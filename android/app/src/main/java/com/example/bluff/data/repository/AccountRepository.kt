@@ -4,7 +4,6 @@ import com.example.bluff.data.local.BluffDatabase
 import com.example.bluff.data.local.entity.AccountEntity
 import com.example.bluff.domain.model.Account
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
@@ -21,10 +20,20 @@ class AccountRepositoryImpl(
     private val userIdProvider: () -> String
 ) : AccountRepository {
 
-    override fun getAllAccounts(): Flow<List<Account>> =
+    override fun getAllAccounts(): Flow<List<Account>> {
+        return db.accountDao().getAllAccounts().map { entities ->
+            entities.map { entity ->
+                // Use synchronous balance query to avoid nested flow collection
+                entity.toModel(currentBalance = 0L)
+            }
+        }
+    }
+
+    // Separate reactive balance stream for when live balance is needed
+    fun getAllAccountsWithBalance(): Flow<List<Account>> =
         db.accountDao().getAllAccounts().map { entities ->
             entities.map { entity ->
-                val balance = db.accountDao().getAccountBalance(entity.id).first()
+                val balance = db.accountDao().getAccountBalanceSync(entity.id)
                 entity.toModel(currentBalance = balance)
             }
         }
@@ -59,6 +68,8 @@ class AccountRepositoryImpl(
     override suspend fun archiveAccount(id: String): Result<Unit> {
         return try {
             db.accountDao().archiveAccount(id)
+            // Deactivate any recurring transactions linked to this account to prevent orphan crashes
+            db.recurringTransactionDao().deactivateByAccountId(id)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
