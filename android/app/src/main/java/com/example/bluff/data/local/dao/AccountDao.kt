@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccountDao {
-    @Query("SELECT * FROM accounts WHERE isArchived = 0 ORDER BY sortOrder ASC, name ASC")
+    // Left join with transactions so Room observes transaction changes and triggers flow emissions for reactive balances
+    @Query("SELECT DISTINCT a.* FROM accounts a LEFT JOIN transactions t ON 1=0 WHERE a.isArchived = 0 ORDER BY a.sortOrder ASC, a.name ASC")
     fun getAllAccounts(): Flow<List<AccountEntity>>
 
     @Query("SELECT * FROM accounts WHERE isArchived = 0 ORDER BY sortOrder ASC, name ASC")

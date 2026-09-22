@@ -24,7 +24,8 @@ class AccountRepositoryImpl(
         return db.accountDao().getAllAccounts().map { entities ->
             entities.map { entity ->
                 // Use synchronous balance query to avoid nested flow collection
-                entity.toModel(currentBalance = 0L)
+                val balance = db.accountDao().getAccountBalanceSync(entity.id)
+                entity.toModel(currentBalance = balance)
             }
         }
     }
