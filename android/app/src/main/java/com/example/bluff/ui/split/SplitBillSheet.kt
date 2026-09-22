@@ -68,13 +68,22 @@ fun SplitBillSheet(
                 .imePadding()
                 .padding(horizontal = 20.dp)
         ) {
-            Text(
-                text = "Split Bill",
-                color = TextPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 22.sp,
-                modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
-            )
+            if (showContactPicker) {
+                ContactPickerContent(
+                    onContactSelected = { contact ->
+                        viewModel.addContact(contact.name, contact.phone)
+                        showContactPicker = false
+                    },
+                    onDismiss = { showContactPicker = false }
+                )
+            } else {
+                Text(
+                    text = "Split Bill",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
+                )
 
             LazyColumn(
                 modifier = Modifier.weight(1f, fill = false),
@@ -207,18 +216,9 @@ fun SplitBillSheet(
                     )
                 }
             }
+            } // close else block
         }
 
         SnackbarHost(hostState = snackbarHostState)
-    }
-
-    if (showContactPicker) {
-        ContactPickerSheet(
-            onContactSelected = { contact ->
-                viewModel.addContact(contact.name, contact.phone)
-                showContactPicker = false
-            },
-            onDismiss = { showContactPicker = false }
-        )
     }
 }

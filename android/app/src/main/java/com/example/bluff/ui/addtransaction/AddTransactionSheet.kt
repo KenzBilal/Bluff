@@ -101,14 +101,31 @@ fun AddTransactionSheet(
             )
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .imePadding()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 32.dp)
-        ) {
+        if (showDebtContactPicker) {
+            ContactPickerContent(
+                onContactSelected = { contact ->
+                    viewModel.setDebtContact(contact.name, contact.phone)
+                    showDebtContactPicker = false
+                },
+                onDismiss = { showDebtContactPicker = false }
+            )
+        } else if (showTransferContactPicker) {
+            ContactPickerContent(
+                onContactSelected = { contact ->
+                    viewModel.setTransferContact(contact.name, contact.phone)
+                    showTransferContactPicker = false
+                },
+                onDismiss = { showTransferContactPicker = false }
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 32.dp)
+            ) {
             // ── Title ──────────────────────────────────────────────────────
             Text(
                 text = when (mode) {
@@ -381,7 +398,6 @@ fun AddTransactionSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ── Save Button ────────────────────────────────────────────────
             BluffButton(
                 text = when (mode) {
                     EntryMode.EXPENSE -> "Save Expense"
@@ -390,30 +406,13 @@ fun AddTransactionSheet(
                 },
                 onClick = { showConfirmDialog = true }
             )
-        }
+        } // close Column
+        } // close else block
 
         SnackbarHost(hostState = snackbarHostState)
     }
 
-    // ── Contact pickers ────────────────────────────────────────────────────
-    if (showDebtContactPicker) {
-        ContactPickerSheet(
-            onContactSelected = { contact ->
-                viewModel.setDebtContact(contact.name, contact.phone)
-                showDebtContactPicker = false
-            },
-            onDismiss = { showDebtContactPicker = false }
-        )
-    }
-    if (showTransferContactPicker) {
-        ContactPickerSheet(
-            onContactSelected = { contact ->
-                viewModel.setTransferContact(contact.name, contact.phone)
-                showTransferContactPicker = false
-            },
-            onDismiss = { showTransferContactPicker = false }
-        )
-    }
+    // ── Dialogs & Pickers ────────────────────────────────────────────────────
     if (showAccountPicker) {
         AccountPicker(
             accounts = accounts,

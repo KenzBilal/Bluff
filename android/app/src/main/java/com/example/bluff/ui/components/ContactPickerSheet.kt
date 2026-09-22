@@ -66,7 +66,7 @@ private suspend fun loadContacts(context: Context): List<PhoneContact> =
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ContactPickerSheet(
+fun ContactPickerContent(
     onContactSelected: (PhoneContact) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -108,20 +108,22 @@ fun ContactPickerSheet(
         }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = Surface,
-            modifier = Modifier.fillMaxWidth().heightIn(max = 600.dp)
+    Column(modifier = Modifier.padding(16.dp).fillMaxWidth().imePadding()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
-                Text(
-                    text = "Select Contact",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = TextPrimary,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
+            Text(
+                text = "Select Contact",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = TextPrimary
+            )
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = ExpenseColor)
+            }
+        }
 
             if (permissionDenied) {
                 Text(
@@ -249,5 +251,3 @@ fun ContactPickerSheet(
             }
         }
     }
-}
-}
