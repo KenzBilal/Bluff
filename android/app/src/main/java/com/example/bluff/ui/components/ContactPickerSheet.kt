@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import com.example.bluff.theme.*
 import com.example.bluff.ui.components.BluffButton
@@ -80,6 +81,8 @@ fun ContactPickerSheet(
     }
     var permissionDenied by remember { mutableStateOf(false) }
 
+    var isLoading by remember { mutableStateOf(false) }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -89,7 +92,9 @@ fun ContactPickerSheet(
 
     LaunchedEffect(permissionGranted) {
         if (permissionGranted) {
+            isLoading = true
             contacts = loadContacts(context)
+            isLoading = false
         } else {
             permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
         }
@@ -103,27 +108,20 @@ fun ContactPickerSheet(
         }
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = Surface,
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 4.dp)
-                    .width(40.dp)
-                    .height(4.dp)
-                    .background(DividerColor, RoundedCornerShape(50.dp))
-            )
-        }
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
-            Text(
-                text = "Select Contact",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = TextPrimary,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Surface,
+            modifier = Modifier.fillMaxWidth().heightIn(max = 600.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+                Text(
+                    text = "Select Contact",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = TextPrimary,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
 
             if (permissionDenied) {
                 Text(
@@ -164,13 +162,35 @@ fun ContactPickerSheet(
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                if (contacts.isEmpty()) {
+                if (isLoading) {
                     Box(
                         modifier = Modifier.fillMaxWidth().height(120.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = Primary)
                     }
+                } else if (contacts.isEmpty()) {
+                    Text(
+                        text = "No contacts found.",
+                        color = TextSecondary,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                    var manualName by remember { mutableStateOf("") }
+                    BluffTextField(
+                        value = manualName,
+                        onValueChange = { manualName = it },
+                        label = "Enter name manually",
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    BluffButton(
+                        text = "Use This Name",
+                        onClick = {
+                            if (manualName.isNotBlank()) {
+                                onContactSelected(PhoneContact(name = manualName, phone = ""))
+                            }
+                        }
+                    )
                 } else {
                     LazyColumn(
                         modifier = Modifier.heightIn(max = 400.dp)
@@ -227,7 +247,7 @@ fun ContactPickerSheet(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
+}
 }
